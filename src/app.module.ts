@@ -7,6 +7,10 @@ import { MongooseModule } from './mongoose/mongoose.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
+import { ApplicationsModule } from './modules/applications/applications.module';
+import { JobsModule } from './modules/jobs/jobs.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { SavedjobsModule } from './modules/savedjobs/savedjobs.module';
 
 @Module({
   imports: [
@@ -23,6 +27,10 @@ import { UsersModule } from './modules/users/users.module';
     ]),
     AuthModule,
     UsersModule,
+    ApplicationsModule,
+    JobsModule,
+    AnalyticsModule,
+    SavedjobsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
