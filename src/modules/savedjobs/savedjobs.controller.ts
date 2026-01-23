@@ -1,34 +1,33 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { RolesGuard } from 'src/common/guards/roles.guard';
 import { SavedjobsService } from './savedjobs.service';
-import { CreateSavedjobDto } from './dto/create-savedjob.dto';
-import { UpdateSavedjobDto } from './dto/update-savedjob.dto';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { Role } from 'src/common/enums/role';
 
-@Controller('savedjobs')
-export class SavedjobsController {
-  constructor(private readonly savedjobsService: SavedjobsService) {}
+@ApiTags('Saved Jobs')
+@ApiBearerAuth()
+@Controller('saved-jobs')
+@UseGuards(JwtAuthGuard, RolesGuard)
+export class SavedJobsController {
+  constructor(private readonly savedJobsService: SavedjobsService) { }
 
-  @Post()
-  create(@Body() createSavedjobDto: CreateSavedjobDto) {
-    return this.savedjobsService.create(createSavedjobDto);
+  @Post(':jobId')
+  @Roles(Role.JOBSEEKER)
+  async saveJob(@Req() req, @Param('jobId') jobId: string) {
+    return this.savedJobsService.saveJob(jobId, req.user._id);
   }
 
-  @Get()
-  findAll() {
-    return this.savedjobsService.findAll();
+  @Delete(':jobId')
+  @Roles(Role.JOBSEEKER)
+  async unsaveJob(@Req() req, @Param('jobId') jobId: string) {
+    return this.savedJobsService.unsaveJob(jobId, req.user._id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.savedjobsService.findOne(+id);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateSavedjobDto: UpdateSavedjobDto) {
-    return this.savedjobsService.update(+id, updateSavedjobDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.savedjobsService.remove(+id);
+  @Get('me')
+  @Roles(Role.JOBSEEKER)
+  async getMySavedJobs(@Req() req) {
+    return this.savedJobsService.getMySavedJobs(req.user._id);
   }
 }

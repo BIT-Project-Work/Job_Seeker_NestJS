@@ -1,4 +1,7 @@
-import { PartialType } from '@nestjs/swagger';
-import { CreateApplicationDto } from './create-application.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { ApplicationStatus } from 'src/common/enums/applicationStatus';
 
-export class UpdateApplicationDto extends PartialType(CreateApplicationDto) {}
+export class UpdateApplicationStatusDto {
+    @ApiProperty({ enum: ApplicationStatus })
+    status: ApplicationStatus;
+}
