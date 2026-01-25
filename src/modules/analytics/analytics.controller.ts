@@ -11,7 +11,7 @@ export class AnalyticsController {
   constructor(private readonly analyticsService: AnalyticsService) { }
 
   //! Get Employer Analytics
-  @Get('employer')
+  @Get('overview')
   @UseGuards(JwtAuthGuard)
   getEmployerAnalytics(@Req() req): Promise<EmployerAnalyticsResponseDto> {
     return this.analyticsService.getEmployerAnalytics(req.user._id, req.user.role);

@@ -221,6 +221,8 @@ export class AuthController {
     @UploadedFile() file: Express.Multer.File,
     @Req() req: Request,
   ) {
+
+    console.log(file)
     if (!file) {
       throw new BadRequestException('No file uploaded')
     }

@@ -6,9 +6,11 @@ import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProfileResponseDto } from './dto/profile-response.dto';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { DeleteResumeDto } from './dto/delete-resume.dto';
 
 @ApiTags('Users')
-@Controller('users')
+@Controller('user')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
   constructor(private readonly usersService: UsersService) { }
@@ -29,7 +31,7 @@ export class UsersController {
   }
 
   //! Update user profile 
-  @Patch(':id')
+  @Patch('profile')
   @ApiOperation({
     summary: 'Update a user profile',
     description: 'Update a user profile'
@@ -44,16 +46,25 @@ export class UsersController {
     description: 'User with this id doesnot exist',
   })
   async updateProfile(
-    @Param('id') id: string,
+    @GetUser('_id') userId: string,
     @Body() updateProfileDto: UpdateProfileDto
   ): Promise<ProfileResponseDto> {
-    return this.usersService.updateProfie(id, updateProfileDto);
+    return this.usersService.updateProfie(userId, updateProfileDto);
   }
 
   //! Delete a user
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(id);
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.usersService.remove(id);
+  // }
+
+  //! Deletes a resume
+  @Delete('resume')
+  async removeResume(
+    @GetUser('_id') userId: string,
+    @Body() deleteResumeDto: DeleteResumeDto
+  ) {
+    return this.usersService.deleteResume(userId, deleteResumeDto);
   }
 
   //! Get Public profile

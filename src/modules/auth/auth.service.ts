@@ -15,7 +15,7 @@ import { LoginResponseDto } from './dto/login-response.dto';
 @Injectable()
 export class AuthService {
 
-  private readonly SALT_ROUNDS = 12;
+  private readonly SALT_ROUNDS = 10;
   //! Dependency Injection 
   constructor(
     @InjectModel(User.name) private UserModel: Model<User>,
@@ -40,8 +40,9 @@ export class AuthService {
 
   private generateToken = (userId: string): string => {
     return this.jwtService.sign(
-      { userId },
+      {}, // payload
       {
+        subject: String(userId), // 👈 becomes payload.sub
         secret: process.env.JWT_SECRET,
         expiresIn: '7d',
       },
@@ -100,7 +101,8 @@ export class AuthService {
     const { email, password } = loginDto;
 
     const user = await this.usersService.findByEmail(email);
-    if (!user || !(await user.matchPassword(password))) {
+
+    if (!user || !(await bcrypt.compare(password.trim(), user.password.trim()))) {
       throw new UnauthorizedException('Invalid email or password')
     }
 
