@@ -8,8 +8,10 @@ import { Job, JobDocument } from '../jobs/schemas/job.schema';
 export class SavedjobsService {
 
   constructor(
-    @InjectModel(SavedJob.name) private readonly savedJobModel: Model<SavedJobDocument>,
-    @InjectModel(Job.name) private readonly jobModel: Model<JobDocument>,
+    @InjectModel(SavedJob.name) 
+    private readonly savedJobModel: Model<SavedJobDocument>,
+    @InjectModel(Job.name) 
+    private readonly jobModel: Model<JobDocument>,
   ) { }
 
   // Save a job

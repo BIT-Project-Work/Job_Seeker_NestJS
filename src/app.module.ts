@@ -2,15 +2,15 @@ import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerMiddleware } from './common/middlewares/logger/logger.middleware';
-import { ConfigModule } from '@nestjs/config';
-import { MongooseModule } from './mongoose/mongoose.module';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
-import { SavedjobsModule } from './modules/savedjobs/savedjobs.module';
+import { SavedjobsModule } from './modules/savedJobs/savedjobs.module';
+import { MongooseModule } from '@nestjs/mongoose';
 
 @Module({
   imports: [
@@ -18,7 +18,24 @@ import { SavedjobsModule } from './modules/savedjobs/savedjobs.module';
       isGlobal: true,
       envFilePath: `.env`,
     }),
-    MongooseModule,
+    //! DB Connection 
+    MongooseModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        uri: config.getOrThrow<string>('DATABASE_URL'),
+        connectionFactory: (connection) => {
+          connection.on('connected', () =>
+            console.log('✅ MongoDB connected'),
+          );
+          connection.on('disconnected', () =>
+            console.log('❌ MongoDB disconnected'),
+          );
+          return connection;
+        },
+      }),
+    }),
+
     ThrottlerModule.forRoot([
       {
         ttl: 60,      // Time to live: 60 seconds
