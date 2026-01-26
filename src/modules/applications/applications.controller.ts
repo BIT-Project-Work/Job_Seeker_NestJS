@@ -15,7 +15,7 @@ import { Role } from 'src/common/enums/role';
 export class ApplicationsController {
   constructor(private readonly applicationsService: ApplicationsService) { }
 
-  @Post('apply/:jobId')
+  @Post(':jobId')
   @Roles(Role.JOBSEEKER)
   async applyToJob(@Req() req, @Param('jobId') jobId: string) {
     return this.applicationsService.applyToJob(req.user._id, jobId, req.user.resume);

@@ -25,7 +25,7 @@ export class SavedJobsController {
     return this.savedJobsService.unsaveJob(jobId, req.user._id);
   }
 
-  @Get('me')
+  @Get('my')
   @Roles(Role.JOBSEEKER)
   async getMySavedJobs(@Req() req) {
     return this.savedJobsService.getMySavedJobs(req.user._id);

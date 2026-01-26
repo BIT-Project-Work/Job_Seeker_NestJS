@@ -41,12 +41,12 @@ export class CreateJobDto {
     @IsEnum(JobType)
     type: JobType;
 
-    @ApiProperty({
-        description: 'Employer User ID',
-        example: '69761fe83480ecf96dff2598',
-    })
-    @IsMongoId()
-    company: string;
+    // @ApiProperty({
+    //     description: 'Employer User ID',
+    //     example: '69761fe83480ecf96dff2598',
+    // })
+    // @IsMongoId()
+    // company: string;
 
     @ApiPropertyOptional({ example: 50000 })
     @IsNumber()

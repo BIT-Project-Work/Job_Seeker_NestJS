@@ -58,7 +58,7 @@ export class JobsController {
   //! Get All Jobs no pagination
 
   //! Get Jobs for Employers
-  @Get('employer')
+  @Get('get-jobs-employer')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
   findEmployerJobs(@GetUser() user: any) {

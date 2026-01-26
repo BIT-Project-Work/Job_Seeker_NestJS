@@ -8,6 +8,7 @@ import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProfileResponseDto } from './dto/profile-response.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { DeleteResumeDto } from './dto/delete-resume.dto';
+import { PublicProfileResponseDto } from './dto/public-profile-response.dto';
 
 @ApiTags('Users')
 @Controller('user')
@@ -69,6 +70,18 @@ export class UsersController {
 
   //! Get Public profile
   @Get('public/:id')
+  @ApiOperation({
+    summary: 'Displays a users public profile',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Profile updated successfully',
+    type: PublicProfileResponseDto
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'User with this id doesnot exist',
+  })
   @ApiParam({ name: 'id', description: 'User ID' })
   getPublicProfile(@Param('id') id: string) {
     return this.usersService.getPublicProfile(id);
