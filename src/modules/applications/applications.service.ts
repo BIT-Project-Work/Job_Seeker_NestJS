@@ -5,6 +5,7 @@ import { Application, ApplicationDocument } from './schemas/application.schema';
 import { Model, Types } from 'mongoose';
 import { Job, JobDocument } from '../jobs/schemas/job.schema';
 import { ApplicationStatus } from 'src/common/enums/applicationStatus';
+import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class ApplicationsService {
@@ -12,16 +13,22 @@ export class ApplicationsService {
   constructor(
     @InjectModel(Application.name) private applicationModel: Model<ApplicationDocument>,
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
+    private readonly mailService: MailService
   ) { }
 
   //! Apply to Job
-  async applyToJob(userId: Types.ObjectId, jobId: string, resume?: string) {
-    const existing = await this.applicationModel.findOne({ job: jobId, applicant: userId });
+  async applyToJob(user: any, jobId: string, resume?: string) {
+
+    if (user.role !== 'JOBSEEKER') {
+      throw new ForbiddenException('Only jobseekers can apply');
+    }
+
+    const existing = await this.applicationModel.findOne({ job: jobId, applicant: user._id });
     if (existing) throw new BadRequestException('Already applied to this job');
 
     const application = await this.applicationModel.create({
-      job: jobId,
-      applicant: userId,
+      job: new Types.ObjectId(jobId),
+      applicant: new Types.ObjectId(user._id),
       resume,
     });
 
@@ -38,13 +45,15 @@ export class ApplicationsService {
 
   //! Get Applicants for Job
   async getApplicantsForJob(jobId: string, userId: Types.ObjectId) {
+
+    const uid = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
     const job = await this.jobModel.findById(jobId);
-    if (!job || job.company.toString() !== userId.toString()) {
+    if (!job || !job.company.equals(uid)) {
       throw new ForbiddenException('Not authorized to view applicants');
     }
 
     return this.applicationModel
-      .find({ job: jobId })
+      .find({ job: new Types.ObjectId(jobId) })
       .populate('job', 'title location category type')
       .populate('applicant', 'name email avatar resume');
   }
@@ -72,18 +81,75 @@ export class ApplicationsService {
 
   //! Update Status
   async updateStatus(applicationId: string, userId: Types.ObjectId, status: ApplicationStatus) {
-    const app = await this.applicationModel.findById(applicationId).populate('job');
+
+    const app = await this.applicationModel.findById(applicationId)
+      .populate({
+        path: 'job',
+        select: 'title company',        // select the fields from job
+        populate: {
+          path: 'company',
+          select: 'companyName'         // select only companyName from the company
+        }
+      })
+      .populate('applicant', 'name email'); // applicant fields
+
     if (!app) throw new NotFoundException('Application not found');
 
-    // Tell TypeScript the shape of populated job
-    const job = app.job as unknown as { company: Types.ObjectId };
+    if (app.status === ApplicationStatus.REJECTED) {
+      throw new BadRequestException('Cannot update rejected application');
+    }
 
-    if (job.company.toString() !== userId.toString()) {
+    // Tell TypeScript the shape of populated job
+
+    const job = app.job as any;
+    const applicant = app.applicant as any;
+    const companyName = job.company?.companyName || "the company"; // fallback
+
+    if (job.company._id.toString() !== userId.toString()) {
       throw new ForbiddenException('Not authorized to update this application');
     }
 
     app.status = status;
     await app.save();
+
+    const companyLogo = 'https://i.imgur.com/3KcynwC.png';
+    const primaryColor = '#165ffc'; // your color
+
+    const subject = `Your application for "${job.title}" has been ${status.toLowerCase()}`;
+
+          const message = `
+        <div style="font-family: Arial, Helvetica, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+          <!-- Header with logo -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <img src="${companyLogo}" alt="Company Logo" style="width: 120px; height: auto;" />
+          </div>
+
+          <!-- Greeting -->
+          <p style="font-size: 16px;">Hi <strong>${applicant.name}</strong>,</p>
+
+          <!-- Main message -->
+          <p style="font-size: 16px;">
+            Your application for the job 
+            "<strong>${job.title}</strong>" at 
+            "<strong>${companyName}</strong>" has been 
+            <span style="color: ${primaryColor}; font-weight: bold;">${status}</span>.
+          </p>
+
+          <!-- Optional extra message -->
+          <p style="font-size: 16px;">
+            Thank you for using our platform. We wish you the best in your job search!
+          </p>
+
+          <!-- Footer -->
+          <hr style="border: 0; border-top: 1px solid #e0e0e0; margin: 30px 0;" />
+          <p style="font-size: 12px; color: #999; text-align: center;">
+            This email was sent by <strong>Job Seeker Pvt. Ltd.</strong>. Please do not reply directly to this email.
+          </p>
+        </div>
+      `;
+
+
+    await this.mailService.sendMail(applicant.email, subject, message, message);
 
     return { message: 'Application status updated', status };
   }
