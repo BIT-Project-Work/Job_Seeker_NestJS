@@ -1,6 +1,6 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards, Req, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { RegisterDto } from './dto/register.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
@@ -208,19 +208,28 @@ export class AuthController {
   //! Post image
   @Post('upload-image')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({
-    summary: 'Post user avatar'
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    description: 'File upload',
+    type: 'multipart/form-data',
+    schema: {
+      type: 'object',
+      properties: {
+        file: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+    },
   })
-  @ApiResponse({
-    status: 200,
-    description: 'User Avatar successfully added',
-    type: String
-  })
-  @UseInterceptors(FileInterceptor('image', multerOptions))
+  @ApiOperation({ summary: 'Upload a file' })
+  @UseInterceptors(FileInterceptor('file', multerOptions))
   uploadImage(
     @UploadedFile() file: Express.Multer.File,
     @Req() req: Request,
   ) {
+
+    // console.log(file)
     if (!file) {
       throw new BadRequestException('No file uploaded')
     }

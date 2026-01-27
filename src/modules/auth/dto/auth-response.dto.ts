@@ -4,32 +4,30 @@ import { Role } from "src/common/enums/role";
 export class AuthResponseDto {
 
     @ApiProperty({
-        description: 'Access token for authentication',
-        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        example: '65c3f7a1b1a3f3c8b4d12345',
+        description: 'User ID',
     })
-    accessToken: string;
+    _id: string;
 
     @ApiProperty({
-        description: 'Refresh token for authentication',
-        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
+        example: 'John Doe',
     })
-    refreshToken: string;
+    name: string;
 
     @ApiProperty({
-        description: 'Authenticated user information',
-        example: {
-            id: 'user-uuid',
-            email: 'john.doe@example.com',
-            firstName: 'John',
-            lastName: 'Doe',
-            role: 'USER'
-        }
+        example: 'johndoe@gmail.com',
     })
-    user: {
-        id: string;
-        email: string;
-        firstName: string | null;
-        lastName: string | null;
-        role: Role;
-    }
+    email: string;
+
+    @ApiProperty({
+        example: 'avatar.png',
+        required: false,
+    })
+    avatar?: string;
+
+    @ApiProperty({
+        enum: Role,
+        example: Role.JOBSEEKER,
+    })
+    role: Role;
 }
