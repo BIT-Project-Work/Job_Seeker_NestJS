@@ -6,7 +6,7 @@ export class RegisterDto {
 
     @ApiProperty({
         description: 'User Name',
-        example: 'John Doe',
+        example: 'Lemon Gautam',
         required: false
     })
     @IsOptional()
@@ -15,7 +15,7 @@ export class RegisterDto {
 
     @ApiProperty({
         description: 'User email address',
-        example: "john.doe@example.com"
+        example: "lemongautam79@gmail.com"
     })
     @IsEmail({}, { message: "Please provide a valid email address" })
     @IsNotEmpty({ message: "Email is required" })
@@ -23,7 +23,7 @@ export class RegisterDto {
 
     @ApiProperty({
         description: 'User password',
-        example: 'Password123!'
+        example: 'Lemon123'
     })
     @IsString()
     @IsNotEmpty({ message: 'Password is required' })

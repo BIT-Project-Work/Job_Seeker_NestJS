@@ -4,13 +4,17 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { ProfileResponseDto } from './dto/profile-response.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { DeleteResumeDto } from './dto/delete-resume.dto';
 import { PublicProfileResponseDto } from './dto/public-profile-response.dto';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { Role } from 'src/common/enums/role';
 
 @ApiTags('Users')
+@ApiBearerAuth()
 @Controller('user')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
@@ -21,12 +25,66 @@ export class UsersController {
   //   return this.usersService.create(createUserDto);
   // }
 
+  //! Get all users [ADMIN]
   @Get()
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN)
+  @ApiOperation({
+    summary: 'View all the users',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'All users fetched successfully',
+    // type: RegisterResponseDto
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Only Admin can view all users',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Users doesnot exist',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal Server Error',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Too Many Requests',
+  })
   findAll() {
     return this.usersService.findAll();
   }
 
+  //! Get user by id 
   @Get(':id')
+  // @UseGuards(RolesGuard)
+  // @Roles(Role.EMPLOYER)
+  @ApiOperation({
+    summary: 'Fetch a user by Id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'User fetched successfully',
+    // type: RegisterResponseDto
+  })
+  // @ApiResponse({
+  //   status: 403,
+  //   description: 'Only Employer can view all users',
+  // })
+  @ApiResponse({
+    status: 404,
+    description: 'Users doesnot exist',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal Server Error',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Too Many Requests',
+  })
   findOne(@Param('id') id: string) {
     return this.usersService.findOne(id);
   }
@@ -61,6 +119,32 @@ export class UsersController {
 
   //! Deletes a resume
   @Delete('resume')
+  @UseGuards(RolesGuard)
+  @Roles(Role.JOBSEEKER)
+  @ApiOperation({
+    summary: 'Delete resume of a user',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Resume deleted successfully',
+    // type: RegisterResponseDto
+  })
+  // @ApiResponse({
+  //   status: 403,
+  //   description: 'Only Employer can view all users',
+  // })
+  @ApiResponse({
+    status: 404,
+    description: 'Users resume doesnot exist',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal Server Error',
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Too Many Requests',
+  })
   async removeResume(
     @GetUser('_id') userId: string,
     @Body() deleteResumeDto: DeleteResumeDto

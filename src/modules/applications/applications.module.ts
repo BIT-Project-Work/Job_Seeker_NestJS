@@ -4,6 +4,7 @@ import { ApplicationsController } from './applications.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Application, ApplicationSchema } from './schemas/application.schema';
 import { Job, JobSchema } from '../jobs/schemas/job.schema';
+import { MailModule } from '../mail/mail.module';
 
 @Module({
   imports: [
@@ -11,6 +12,7 @@ import { Job, JobSchema } from '../jobs/schemas/job.schema';
       { name: Application.name, schema: ApplicationSchema },
       { name: Job.name, schema: JobSchema },
     ]),
+    MailModule
   ],
   controllers: [ApplicationsController],
   providers: [ApplicationsService],

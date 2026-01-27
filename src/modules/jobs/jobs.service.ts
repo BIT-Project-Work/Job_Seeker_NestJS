@@ -3,7 +3,7 @@ import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Job, JobDocument } from './schemas/job.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { Application, ApplicationDocument } from '../applications/schemas/application.schema';
 import { SavedJob, SavedJobDocument } from '../savedJobs/schemas/saved-job.schema';
 import { JobQueryDto } from './dto/job-query.dto';
@@ -60,32 +60,42 @@ export class JobsService {
 
     const jobs = await this.jobModel
       .find(query)
-      .populate('company', 'name companyName companyLogo');
+      .populate('company', 'name companyName companyLogo')
+      .lean();
 
-    let savedIds: string[] = [];
+    // let savedIds: string[] = [];
+
+    let savedIdSet = new Set<string>();
     let appliedMap: Record<string, string> = {};
 
     if (userId) {
+      const uid = new Types.ObjectId(userId);
+
       const saved = await this.savedJobModel
-        .find({ jobseeker: userId })
+        .find({ jobseeker: uid })
         .select('job');
 
-      savedIds = saved.map(s => String(s.job));
+      // savedIds = saved.map(s => String(s.job));
+      savedIdSet = new Set(saved.map(s => s.job.toString()));
 
       const apps = await this.appModel
-        .find({ applicant: userId })
+        .find({ applicant: uid })
         .select('job status');
 
       apps.forEach(app => {
-        appliedMap[String(app.job)] = app.status;
+        // appliedMap[String(app.job)] = app.status;
+        appliedMap[app.job.toString()] = app.status;
       });
     }
 
     return jobs.map(job => {
-      const id = String(job._id);
+      // const id = String(job._id);
+      const id = job._id.toString();
       return {
-        ...job.toObject(),
-        isSaved: savedIds.includes(id),
+        // ...job.toObject(),
+        ...job,
+        // isSaved: savedIds.includes(id),
+        isSaved: savedIdSet.has(id),
         applicationStatus: appliedMap[id] || null,
       };
     });
@@ -108,10 +118,35 @@ export class JobsService {
       jobs.map(async job => ({
         ...job,
         applicationCount: await this.appModel.countDocuments({
-          job: job._id,
+          job: new Types.ObjectId(job._id),
         }),
       })),
     );
+
+    // const jobs = await this.jobModel.aggregate([
+    //   { $match: { company: new Types.ObjectId(user._id) } },
+    //   {
+    //     $lookup: {
+    //       from: 'applications',
+    //       localField: '_id',
+    //       foreignField: 'job',
+    //       as: 'applications',
+    //     },
+    //   },
+    //   {
+    //     $addFields: {
+    //       applicationCount: { $size: '$applications' },
+    //     },
+    //   },
+    //   {
+    //     $project: {
+    //       applications: 0,
+    //     },
+    //   },
+    // ]);
+
+    // return jobs;
+
   }
 
   //! Get Job by id

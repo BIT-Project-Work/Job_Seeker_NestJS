@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } f
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
-import { ApiBadRequestResponse, ApiBody, ApiCreatedResponse, ApiOperation, ApiTags, ApiTooManyRequestsResponse } from '@nestjs/swagger';
+import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOperation, ApiResponse, ApiTags, ApiTooManyRequestsResponse } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { Role } from 'src/common/enums/role';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -13,12 +13,12 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { JobQueryDto } from './dto/job-query.dto';
 
 @ApiTags('Jobs')
+@ApiBearerAuth()
 @Controller('jobs')
 export class JobsController {
 
   //! DI
   constructor(private readonly jobsService: JobsService) { }
-
 
   //! Create Job 
   @Post()
@@ -32,11 +32,11 @@ export class JobsController {
     type: CreateJobDto,
   })
   @ApiCreatedResponse({
-    description: 'Order created successfully',
+    description: 'Job created successfully',
     type: ResponseCreateJobDto,
   })
   @ApiBadRequestResponse({
-    description: 'Invalid data or insufficient stock',
+    description: 'Invalid data',
   })
   @ApiTooManyRequestsResponse({
     description: 'Too many requests - rate limit exceeded',
@@ -51,6 +51,17 @@ export class JobsController {
   //! Get All Jobs (Filtered/Paginated) 
   @Get()
   @RelaxedThrottler()
+  @ApiOperation({
+    summary: 'Get all jobs',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Get all available jobs with filters, search and pagination",
+    // type:GetAllJobsResponseDto
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'Too many requests - rate limit exceeded',
+  })
   findAll(@Query() query: JobQueryDto) {
     return this.jobsService.findAll(query);
   }
@@ -61,12 +72,33 @@ export class JobsController {
   @Get('get-jobs-employer')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
+  @ApiOperation({
+    summary: 'Get all jobs created by an employer',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Jobs created by an employer",
+    // type:GetAllJobsResponseDto
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'Too many requests - rate limit exceeded',
+  })
   findEmployerJobs(@GetUser() user: any) {
     return this.jobsService.findEmployerJobs(user);
   }
 
   //! Get Single Job
   @Get(':id')
+  @ApiOperation({
+    summary: 'Get a job by id',
+  })
+  @ApiResponse({
+    status: 200,
+    // type:GetAllJobsResponseDto
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'Too many requests - rate limit exceeded',
+  })
   findOne(
     @Param('id') id: string,
     @Query('userId') userId?: string
@@ -76,7 +108,35 @@ export class JobsController {
 
   //! Update Job 
   @Patch(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
+  @ApiOperation({
+    summary: 'Update a job by id',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Job successfully updated"
+    // type:GetAllJobsResponseDto
+  })
+  @ApiResponse({
+    status: 403,
+    description: "Only employer can update a job"
+  })
+  @ApiResponse({
+    status: 429,
+    description: 'Too Many Requests',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Job doesnot exist',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal Server Error',
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'Too many requests - rate limit exceeded',
+  })
   update(
     @Param('id') id: string,
     @Body() updateJobDto: UpdateJobDto,
@@ -87,7 +147,30 @@ export class JobsController {
 
   //! Delete Job
   @Delete(':id')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
+  @ApiOperation({
+    summary: 'Delete a job',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Delete a job by id",
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Only Employer can delete a job',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Job doesnot exist',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal Server Error',
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'Too many requests - rate limit exceeded',
+  })
   remove(
     @Param('id') id: string,
     @GetUser() user: any
@@ -97,7 +180,30 @@ export class JobsController {
 
   //! Toggle Close Job
   @Patch(':id/toggle-close')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
+  @ApiOperation({
+    summary: 'Close to a job',
+  })
+  @ApiResponse({
+    status: 200,
+    description: "Job closed successfully",
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Only Employer can close a job',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Job doesnot exist',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal Server Error',
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'Too many requests - rate limit exceeded',
+  })
   toggleClose(
     @Param('id') id: string,
     @GetUser() user: any

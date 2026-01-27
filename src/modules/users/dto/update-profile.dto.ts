@@ -13,6 +13,15 @@ export class UpdateProfileDto {
     name?: string;
 
     @ApiProperty({
+        description: 'User email',
+        example: 'johndoe@gmail.com',
+        required: false
+    })
+    @IsOptional()
+    @IsString()
+    email?: string;
+
+    @ApiProperty({
         description: 'User Avatar',
         example: 'http://localhost:7000/uploads/lemon.png',
         required: false
