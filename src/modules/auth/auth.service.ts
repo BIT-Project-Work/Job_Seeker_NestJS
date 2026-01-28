@@ -12,10 +12,14 @@ import { LoginDto } from './dto/login.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 
+/**
+  *! Auth Service
+  */
 @Injectable()
 export class AuthService {
 
   private readonly SALT_ROUNDS = 10;
+
   //! Dependency Injection 
   constructor(
     @InjectModel(User.name) private UserModel: Model<User>,
@@ -68,7 +72,9 @@ export class AuthService {
     }
   }
 
-  //! Register a new user
+  /**
+  *! Register a new user
+  */
   async register(registerDto: RegisterDto): Promise<RegisterResponseDto> {
 
     const { name, email, password, avatar, role } = registerDto;
@@ -96,7 +102,9 @@ export class AuthService {
     }
   }
 
-  //! Login User
+  /**
+  *! Login User
+  */
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     const { email, password } = loginDto;
 
@@ -109,6 +117,9 @@ export class AuthService {
     return this.buildResponse(user);
   }
 
+  /**
+  *! Auth Service
+  */
   //! Logout
   async logout(userId: string): Promise<void> {
 

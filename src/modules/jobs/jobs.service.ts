@@ -9,6 +9,9 @@ import { SavedJob, SavedJobDocument } from '../savedJobs/schemas/saved-job.schem
 import { JobQueryDto } from './dto/job-query.dto';
 import { ApplicationStatus } from 'src/common/enums/applicationStatus';
 
+/**
+ *! Job Service
+ */
 @Injectable()
 export class JobsService {
 
@@ -19,7 +22,9 @@ export class JobsService {
     @InjectModel(SavedJob.name) private savedJobModel: Model<SavedJobDocument>,
   ) { }
 
-  //! Create Job 
+  /**
+ *! Create Job 
+ */
   async create(createJobDto: CreateJobDto, user: any) {
     console.log(user._id)
     if (user.role !== 'EMPLOYER') {
@@ -32,7 +37,9 @@ export class JobsService {
     })
   }
 
-  //! Get All Jobs with Queries
+  /**
+ *! Get All Jobs with Queries
+ */
   async findAll(queryDto: JobQueryDto) {
     const {
       keyword,
@@ -101,9 +108,13 @@ export class JobsService {
     });
   }
 
-  //! Get All Jobs Without Queries
+  /**
+ *! Get All Jobs Without Queries
+ */
 
-  //! Employer Jobs
+  /**
+ *! Employer Jobs
+ */
   async findEmployerJobs(user: any) {
     if (user.role !== 'EMPLOYER') {
       throw new ForbiddenException('Access denied');
@@ -149,7 +160,9 @@ export class JobsService {
 
   }
 
-  //! Get Job by id
+  /**
+ *! Get Job by id
+ */
   async findOne(id: string, userId?: string) {
     const job = await this.jobModel
       .findById(id)
@@ -170,7 +183,9 @@ export class JobsService {
     return { ...job.toObject(), applicationStatus };
   }
 
-  //! Update a Job
+  /**
+ *! Update a Job
+ */
   async update(id: string, dto: UpdateJobDto, user: any) {
     const job = await this.jobModel.findById(id);
     if (!job) throw new NotFoundException('Job not found');
@@ -183,7 +198,9 @@ export class JobsService {
     return job.save();
   }
 
-  //! Delete job
+  /**
+ *! Delete job
+ */
   async remove(id: string, user: any) {
     const job = await this.jobModel.findById(id);
     if (!job) throw new NotFoundException('Job not found');
@@ -196,7 +213,9 @@ export class JobsService {
     return { message: 'Job deleted successfully' };
   }
 
-  //! Toggle Close
+  /**
+ *! Toggle Close
+ */
   async toggleClose(id: string, user: any) {
     const job = await this.jobModel.findById(id);
     if (!job) throw new NotFoundException('Job not found');

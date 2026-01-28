@@ -12,6 +12,9 @@ import { DeleteResumeDto } from './dto/delete-resume.dto';
 import { Role } from 'src/common/enums/role';
 import { PublicProfileResponseDto } from './dto/public-profile-response.dto';
 
+/**
+ *! User Services
+ */
 @Injectable()
 export class UsersService {
 
@@ -25,22 +28,30 @@ export class UsersService {
     return await this.userModel.create(createUserDto);
   }
 
-  //! Find all users 
+  /**
+ *! Find all users 
+ */
   async findAll() {
     return await this.userModel.find();
   }
 
-  //! Find user by email address
+  /**
+*! Find user by email address
+*/
   async findByEmail(email: string) {
     return await this.userModel.findOne({ email })
   }
 
-  //! Find User by id
+  /**
+*! Find User by id
+*/
   async findOne(id: string) {
     return await this.userModel.findById(id).select('-password')
   }
 
-  //! Update User profile
+  /**
+*!  Update User profile
+*/
   async updateProfie(
     userId: string,
     dto: UpdateProfileDto
@@ -75,7 +86,9 @@ export class UsersService {
     };
   }
 
-  //! Delete Resume
+  /**
+*!  Delete Resume
+*/
   async deleteResume(userId: string, dto: DeleteResumeDto) {
     const user = await this.userModel.findById(userId);
 
@@ -112,7 +125,9 @@ export class UsersService {
     };
   }
 
-  //! Delete a user
+  /**
+*!   Delete a user
+*/
   async remove(id: string) {
     return `This action removes a #${id} user`;
   }

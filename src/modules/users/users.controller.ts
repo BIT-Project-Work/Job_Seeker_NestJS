@@ -13,6 +13,9 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role';
 
+/**
+ *! Users API controller
+ */
 @ApiTags('Users')
 @ApiBearerAuth()
 @Controller('user')
@@ -25,7 +28,10 @@ export class UsersController {
   //   return this.usersService.create(createUserDto);
   // }
 
-  //! Get all users [ADMIN]
+
+  /**
+  *! Get all users [ADMIN]
+  */
   @Get()
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
@@ -57,7 +63,10 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  //! Get user by id 
+
+  /**
+  *! Get users by id
+  */
   @Get(':id')
   // @UseGuards(RolesGuard)
   // @Roles(Role.EMPLOYER)
@@ -89,7 +98,9 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  //! Update user profile 
+  /**
+  *! Update user profile
+  */
   @Patch('profile')
   @ApiOperation({
     summary: 'Update a user profile',
@@ -111,13 +122,17 @@ export class UsersController {
     return this.usersService.updateProfie(userId, updateProfileDto);
   }
 
-  //! Delete a user
+  /**
+  *! Delete a user
+  */
   // @Delete(':id')
   // remove(@Param('id') id: string) {
   //   return this.usersService.remove(id);
   // }
 
-  //! Deletes a resume
+  /**
+  *! Delete a resume
+  */
   @Delete('resume')
   @UseGuards(RolesGuard)
   @Roles(Role.JOBSEEKER)
@@ -152,7 +167,9 @@ export class UsersController {
     return this.usersService.deleteResume(userId, deleteResumeDto);
   }
 
-  //! Get Public profile
+  /**
+  *! Get Public Profile
+  */
   @Get('public/:id')
   @ApiOperation({
     summary: 'Displays a users public profile',

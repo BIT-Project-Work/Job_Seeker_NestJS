@@ -15,6 +15,9 @@ interface PopulatedJob {
   title: string;
 }
 
+/**
+ *! Analytics API Controller
+ */
 @Injectable()
 export class AnalyticsService {
 
@@ -23,7 +26,9 @@ export class AnalyticsService {
     @InjectModel(Application.name) private applicationModel: Model<ApplicationDocument>,
   ) { }
 
-  //! Employer analytics
+  /**
+ *! Employer analytics
+ */
   async getEmployerAnalytics(
     userId: Types.ObjectId,
     role: string,

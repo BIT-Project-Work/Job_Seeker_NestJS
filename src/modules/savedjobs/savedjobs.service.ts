@@ -4,17 +4,23 @@ import { SavedJob, SavedJobDocument } from './schemas/saved-job.schema';
 import { Model, Types } from 'mongoose';
 import { Job, JobDocument } from '../jobs/schemas/job.schema';
 
+/**
+ *! Saved Jobs Service
+ */
 @Injectable()
 export class SavedjobsService {
 
+  //! DI 
   constructor(
-    @InjectModel(SavedJob.name) 
+    @InjectModel(SavedJob.name)
     private readonly savedJobModel: Model<SavedJobDocument>,
-    @InjectModel(Job.name) 
+    @InjectModel(Job.name)
     private readonly jobModel: Model<JobDocument>,
   ) { }
 
-  // Save a job
+  /**
+ *! Save a job
+ */
   async saveJob(jobId: string, userId: Types.ObjectId) {
     const exists = await this.savedJobModel.findOne({ job: jobId, jobseeker: userId });
     if (exists) throw new BadRequestException('Job already saved');
@@ -23,7 +29,9 @@ export class SavedjobsService {
     return saved;
   }
 
-  // Unsave a job
+  /**
+ *! Unsave a job
+ */
   async unsaveJob(jobId: string, userId: Types.ObjectId) {
     const deleted = await this.savedJobModel.findOneAndDelete({ job: jobId, jobseeker: userId });
     if (!deleted) throw new NotFoundException('Saved job not found');

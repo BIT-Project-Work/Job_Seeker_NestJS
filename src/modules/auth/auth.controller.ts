@@ -15,16 +15,23 @@ import type { Request } from 'express';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
 
+/**
+ *! Auth API controller
+ */
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
+
+  //! DI
   constructor(
     private readonly authService: AuthService,
     private usersService: UsersService,
     private jwtService: JwtService
   ) { }
 
-  //! Register/ SignUp User
+  /**
+ *! Register/ SignUp User
+ */
   @Post('register')
   @HttpCode(201)
   @ApiOperation({
@@ -52,7 +59,9 @@ export class AuthController {
     return this.authService.register(registerDto);
   }
 
-  //! Login User
+  /**
+ *! Login User
+ */
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -161,7 +170,9 @@ export class AuthController {
   //   return this.authService.resetPassword();
   // }
 
-  //! Logout user and invalidate refresh token
+  /**
+ *! Logout user and invalidate refresh token
+ */
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
@@ -189,7 +200,9 @@ export class AuthController {
     }
   }
 
-  //! Get Current User Info/ Logged in User Details
+  /**
+ *! Get Current User Info/ Logged in User Details
+ */
   @UseGuards(JwtAuthGuard)
   @Get('me')
   @HttpCode(HttpStatus.OK)
@@ -205,7 +218,9 @@ export class AuthController {
     return req.user;
   }
 
-  //! Post image
+  /**
+ *! Post image
+ */
   @Post('upload-image')
   @HttpCode(HttpStatus.OK)
   @ApiConsumes('multipart/form-data')

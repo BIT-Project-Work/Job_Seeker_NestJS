@@ -7,16 +7,22 @@ import { Job, JobDocument } from '../jobs/schemas/job.schema';
 import { ApplicationStatus } from 'src/common/enums/applicationStatus';
 import { MailService } from '../mail/mail.service';
 
+/**
+*! Job Application Service
+*/
 @Injectable()
 export class ApplicationsService {
 
+  //! DI 
   constructor(
     @InjectModel(Application.name) private applicationModel: Model<ApplicationDocument>,
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
     private readonly mailService: MailService
   ) { }
 
-  //! Apply to Job
+  /**
+ *! Apply to Job
+ */
   async applyToJob(user: any, jobId: string, resume?: string) {
 
     if (user.role !== 'JOBSEEKER') {
@@ -35,7 +41,9 @@ export class ApplicationsService {
     return application;
   }
 
-  //! Get My Applications
+  /**
+ *! Get My Applications
+ */
   async getMyApplications(userId: Types.ObjectId) {
     return this.applicationModel
       .find({ applicant: userId })
@@ -43,7 +51,9 @@ export class ApplicationsService {
       .sort({ createdAt: -1 });
   }
 
-  //! Get Applicants for Job
+  /**
+ *! Get Applicants for Job
+ */
   async getApplicantsForJob(jobId: string, userId: Types.ObjectId) {
 
     const uid = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
@@ -58,7 +68,9 @@ export class ApplicationsService {
       .populate('applicant', 'name email avatar resume');
   }
 
-  //! Get Application By Id
+  /**
+ *! Get Application By Id
+ */
   async getApplicationById(applicationId: string, userId: Types.ObjectId) {
     const app = await this.applicationModel
       .findById(applicationId)
@@ -79,7 +91,9 @@ export class ApplicationsService {
     return app;
   }
 
-  //! Update Status
+  /**
+ *! Update Status
+ */
   async updateStatus(applicationId: string, userId: Types.ObjectId, status: ApplicationStatus) {
 
     const app = await this.applicationModel.findById(applicationId)
@@ -117,7 +131,7 @@ export class ApplicationsService {
 
     const subject = `Your application for "${job.title}" has been ${status.toLowerCase()}`;
 
-          const message = `
+    const message = `
         <div style="font-family: Arial, Helvetica, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
           <!-- Header with logo -->
           <div style="text-align: center; margin-bottom: 30px;">

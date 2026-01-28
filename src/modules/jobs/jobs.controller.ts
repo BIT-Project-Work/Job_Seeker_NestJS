@@ -12,6 +12,9 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { JobQueryDto } from './dto/job-query.dto';
 
+/**
+ *! Jobs API controller
+ */
 @ApiTags('Jobs')
 @ApiBearerAuth()
 @Controller('jobs')
@@ -20,7 +23,9 @@ export class JobsController {
   //! DI
   constructor(private readonly jobsService: JobsService) { }
 
-  //! Create Job 
+  /**
+ *! Create Job 
+ */
   @Post()
   @ModerateThrottler()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -48,7 +53,9 @@ export class JobsController {
     return this.jobsService.create(createJobDto, user);
   }
 
-  //! Get All Jobs (Filtered/Paginated) 
+  /**
+ *! Get All Jobs (Filtered/Paginated) 
+ */
   @Get()
   @RelaxedThrottler()
   @ApiOperation({
@@ -66,9 +73,13 @@ export class JobsController {
     return this.jobsService.findAll(query);
   }
 
-  //! Get All Jobs no pagination
+  /**
+ *! Get All Jobs no pagination
+ */
 
-  //! Get Jobs for Employers
+  /**
+ *! Get Jobs for Employers
+ */
   @Get('get-jobs-employer')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
@@ -87,7 +98,9 @@ export class JobsController {
     return this.jobsService.findEmployerJobs(user);
   }
 
-  //! Get Single Job
+  /**
+ *! Get Single Job
+ */
   @Get(':id')
   @ApiOperation({
     summary: 'Get a job by id',
@@ -106,7 +119,9 @@ export class JobsController {
     return this.jobsService.findOne(id, userId);
   }
 
-  //! Update Job 
+  /**
+ *! Update Job 
+ */
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
@@ -145,7 +160,9 @@ export class JobsController {
     return this.jobsService.update(id, updateJobDto, user);
   }
 
-  //! Delete Job
+  /**
+ *! Delete Job
+ */
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
@@ -178,7 +195,9 @@ export class JobsController {
     return this.jobsService.remove(id, user);
   }
 
-  //! Toggle Close Job
+  /**
+ *! Toggle Close Job
+ */
   @Patch(':id/toggle-close')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)

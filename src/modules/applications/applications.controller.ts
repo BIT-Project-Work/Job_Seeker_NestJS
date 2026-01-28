@@ -8,6 +8,9 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role';
 
+/**
+ *! Job Application API controller
+ */
 @ApiTags('Applications')
 @ApiBearerAuth()
 @Controller('applications')
@@ -17,7 +20,9 @@ export class ApplicationsController {
   //! DI 
   constructor(private readonly applicationsService: ApplicationsService) { }
 
-  //! Apply to a Job 
+  /**
+ *! Apply to a Job
+ */
   @Post(':jobId')
   @Roles(Role.JOBSEEKER)
   @ApiOperation({
@@ -52,7 +57,9 @@ export class ApplicationsController {
     return this.applicationsService.applyToJob(req.user, jobId, req.user.resume);
   }
 
-  //! Get My Own Application [JOBSEEKER]
+  /**
+ *! Get My Own Application [JOBSEEKER]
+ */
   @Get('me')
   @Roles(Role.JOBSEEKER)
   @ApiOperation({
@@ -78,7 +85,9 @@ export class ApplicationsController {
     return this.applicationsService.getMyApplications(req.user._id);
   }
 
-  //! Get all the applicants (users) who have applied for a job [EMPLOYER] 
+  /**
+ *! Get all the applicants (users) who have applied for a job [EMPLOYER] 
+ */
   @Get('job/:jobId')
   @Roles(Role.EMPLOYER)
   @ApiOperation({
@@ -109,7 +118,9 @@ export class ApplicationsController {
     return this.applicationsService.getApplicantsForJob(jobId, req.user._id);
   }
 
-  //! Get Application by Id 
+  /**
+ *! Get Application by Id 
+ */
   @Get(':id')
   @Roles(Role.EMPLOYER)
   @ApiOperation({
@@ -140,7 +151,9 @@ export class ApplicationsController {
     return this.applicationsService.getApplicationById(id, req.user._id);
   }
 
-  //! Update an application 
+  /**
+*!  Update an application
+*/
   @Patch(':id/status')
   @Roles(Role.EMPLOYER)
   @ApiOperation({
