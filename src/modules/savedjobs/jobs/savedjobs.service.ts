@@ -4,9 +4,9 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { SavedJob, SavedJobDocument } from './schemas/saved-job.schema';
+import { SavedJob, SavedJobDocument } from '../schemas/saved-job.schema';
 import { Model, Types } from 'mongoose';
-import { Job, JobDocument } from '../jobs/schemas/job.schema';
+import { Job, JobDocument } from '../../jobs/schemas/job.schema';
 
 /**
  *! Saved Jobs Service
