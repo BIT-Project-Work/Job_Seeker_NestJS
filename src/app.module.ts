@@ -11,7 +11,7 @@ import { JobsModule } from './modules/jobs/jobs.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
-import { SavedJobsModule } from './modules/savedJobs/savedJobs.module';
+// import { SavedJobsModule } from './modules/savedJobs/savedJobs.module';
 
 @Module({
   imports: [
@@ -46,7 +46,7 @@ import { SavedJobsModule } from './modules/savedJobs/savedJobs.module';
     ApplicationsModule,
     JobsModule,
     AnalyticsModule,
-    SavedJobsModule,
+    // SavedJobsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

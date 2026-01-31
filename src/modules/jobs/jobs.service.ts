@@ -12,10 +12,9 @@ import {
   Application,
   ApplicationDocument,
 } from '../applications/schemas/application.schema';
-// import { SavedJob, SavedJobDocument } from '../savedJobs/schemas/saved-job.schema';
-import { SavedJob, SavedJobDocument } from '../savedJobs/schemas/saved-job.schema';
 import { JobQueryDto } from './dto/job-query.dto';
 import { ApplicationStatus } from 'src/common/enums/applicationStatus';
+// import { SavedJob, SavedJobDocument } from '../savedJobs/schemas/savedJob.schema';
 
 /**
  *! Job Service
@@ -26,7 +25,7 @@ export class JobsService {
   constructor(
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
     @InjectModel(Application.name) private appModel: Model<ApplicationDocument>,
-    @InjectModel(SavedJob.name) private savedJobModel: Model<SavedJobDocument>,
+    // @InjectModel(SavedJob.name) private savedJobModel: Model<SavedJobDocument>,
   ) { }
 
   /**
@@ -47,65 +46,69 @@ export class JobsService {
   /**
    *! Get All Jobs with Queries
    */
+  // async findAll(queryDto: JobQueryDto) {
+  //   const { keyword, location, category, type, minSalary, maxSalary, userId } =
+  //     queryDto;
+
+  //   const query: any = {
+  //     isClosed: false,
+  //     ...(keyword && { title: { $regex: keyword, $options: 'i' } }),
+  //     ...(location && { location: { $regex: location, $options: 'i' } }),
+  //     ...(category && { category }),
+  //     ...(type && { type }),
+  //   };
+
+  //   if (minSalary || maxSalary) {
+  //     query.$and = [];
+  //     if (minSalary) query.$and.push({ salaryMax: { $gte: minSalary } });
+  //     if (maxSalary) query.$and.push({ salaryMin: { $lte: maxSalary } });
+  //   }
+
+  //   const jobs = await this.jobModel
+  //     .find(query)
+  //     .populate('company', 'name companyName companyLogo')
+  //     .lean();
+
+  //   // let savedIds: string[] = [];
+
+  //   let savedIdSet = new Set<string>();
+  //   const appliedMap: Record<string, string> = {};
+
+  //   if (userId) {
+  //     const uid = new Types.ObjectId(userId);
+
+  //     const saved = await this.savedJobModel
+  //       .find({ jobseeker: uid })
+  //       .select('job');
+
+  //     // savedIds = saved.map(s => String(s.job));
+  //     savedIdSet = new Set(saved.map((s) => s.job.toString()));
+
+  //     const apps = await this.appModel
+  //       .find({ applicant: uid })
+  //       .select('job status');
+
+  //     apps.forEach((app) => {
+  //       // appliedMap[String(app.job)] = app.status;
+  //       appliedMap[app.job.toString()] = app.status;
+  //     });
+  //   }
+
+  //   return jobs.map((job) => {
+  //     // const id = String(job._id);
+  //     const id = job._id.toString();
+  //     return {
+  //       // ...job.toObject(),
+  //       ...job,
+  //       // isSaved: savedIds.includes(id),
+  //       isSaved: savedIdSet.has(id),
+  //       applicationStatus: appliedMap[id] || null,
+  //     };
+  //   });
+  // }
+
   async findAll(queryDto: JobQueryDto) {
-    const { keyword, location, category, type, minSalary, maxSalary, userId } =
-      queryDto;
-
-    const query: any = {
-      isClosed: false,
-      ...(keyword && { title: { $regex: keyword, $options: 'i' } }),
-      ...(location && { location: { $regex: location, $options: 'i' } }),
-      ...(category && { category }),
-      ...(type && { type }),
-    };
-
-    if (minSalary || maxSalary) {
-      query.$and = [];
-      if (minSalary) query.$and.push({ salaryMax: { $gte: minSalary } });
-      if (maxSalary) query.$and.push({ salaryMin: { $lte: maxSalary } });
-    }
-
-    const jobs = await this.jobModel
-      .find(query)
-      .populate('company', 'name companyName companyLogo')
-      .lean();
-
-    // let savedIds: string[] = [];
-
-    let savedIdSet = new Set<string>();
-    const appliedMap: Record<string, string> = {};
-
-    if (userId) {
-      const uid = new Types.ObjectId(userId);
-
-      const saved = await this.savedJobModel
-        .find({ jobseeker: uid })
-        .select('job');
-
-      // savedIds = saved.map(s => String(s.job));
-      savedIdSet = new Set(saved.map((s) => s.job.toString()));
-
-      const apps = await this.appModel
-        .find({ applicant: uid })
-        .select('job status');
-
-      apps.forEach((app) => {
-        // appliedMap[String(app.job)] = app.status;
-        appliedMap[app.job.toString()] = app.status;
-      });
-    }
-
-    return jobs.map((job) => {
-      // const id = String(job._id);
-      const id = job._id.toString();
-      return {
-        // ...job.toObject(),
-        ...job,
-        // isSaved: savedIds.includes(id),
-        isSaved: savedIdSet.has(id),
-        applicationStatus: appliedMap[id] || null,
-      };
-    });
+    return await "Hello World";
   }
 
   /**

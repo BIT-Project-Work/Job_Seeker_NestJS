@@ -7,7 +7,7 @@ import {
   Application,
   ApplicationSchema,
 } from '../applications/schemas/application.schema';
-import { SavedJob, SavedJobSchema } from '../savedJobs/schemas/saved-job.schema';
+// import { SavedJob, SavedJobSchema } from '../savedJobs/schemas/savedJob.schema';
 
 
 @Module({
@@ -15,7 +15,7 @@ import { SavedJob, SavedJobSchema } from '../savedJobs/schemas/saved-job.schema'
     MongooseModule.forFeature([
       { name: Job.name, schema: JobSchema },
       { name: Application.name, schema: ApplicationSchema },
-      { name: SavedJob.name, schema: SavedJobSchema },
+      // { name: SavedJob.name, schema: SavedJobSchema },
     ]),
   ],
   controllers: [JobsController],
