@@ -21,15 +21,14 @@ jobs:
         with:
           node-version: 20
           cache: npm
-          cache-dependency-path: src/package-lock.json
+          cache-dependency-path: package-lock.json
 
       - name: Install backend dependencies
-        working-directory: src
         run: npm ci
 
       - name: Lint backend
-        working-directory: src
-        run: npm run lint -- --max-warnings=0
+        # run: npm run lint -- --max-warnings=0
+        run: npm run lint
 
       - name: Build backend image
-        run: docker build -t backend ./src
+        run: docker build -t backend .

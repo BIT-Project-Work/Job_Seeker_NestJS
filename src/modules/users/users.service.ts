@@ -125,7 +125,7 @@ export class UsersService {
   /**
    *!   Delete a user
    */
-  async remove(id: string) {
+  remove(id: string) {
     return `This action removes a #${id} user`;
   }
 

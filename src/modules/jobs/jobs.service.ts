@@ -75,7 +75,7 @@ export class JobsService {
     // let savedIds: string[] = [];
 
     let savedIdSet = new Set<string>();
-    let appliedMap: Record<string, string> = {};
+    const appliedMap: Record<string, string> = {};
 
     if (userId) {
       const uid = new Types.ObjectId(userId);

@@ -11,6 +11,7 @@ import { JobsModule } from './modules/jobs/jobs.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { SavedjobsModule } from './modules/savedJobs/savedjobs.module';
 import { MongooseModule } from '@nestjs/mongoose';
+import { Connection } from 'mongoose';
 
 @Module({
   imports: [
@@ -24,7 +25,7 @@ import { MongooseModule } from '@nestjs/mongoose';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
         uri: config.getOrThrow<string>('DATABASE_URL'),
-        connectionFactory: (connection) => {
+        connectionFactory: (connection: Connection) => {
           connection.on('connected', () => console.log('✅ MongoDB connected'));
           connection.on('disconnected', () =>
             console.log('❌ MongoDB disconnected'),

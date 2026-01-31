@@ -238,7 +238,7 @@ export class AuthController {
     type: AuthResponseDto,
   })
   async getMe(@Req() req: any) {
-    return req.user;
+    return await req.user;
   }
 
   /**

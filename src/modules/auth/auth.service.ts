@@ -132,7 +132,7 @@ export class AuthService {
   async logout(userId: string): Promise<void> {}
 
   //! Upload image
-  async uploadAvatar(avatarImage: String) {}
+  async uploadAvatar(avatarImage: string) {}
 
   //! Refresh access token
   async refreshTokens(userId: string) {}
