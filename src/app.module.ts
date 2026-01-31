@@ -9,9 +9,9 @@ import { UsersModule } from './modules/users/users.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { JobsModule } from './modules/jobs/jobs.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
-import { SavedjobsModule } from './modules/savedJobs/jobs/savedjobs.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
+import { SavedJobsModule } from './modules/savedJobs/savedJobs.module';
 
 @Module({
   imports: [
@@ -46,7 +46,7 @@ import { Connection } from 'mongoose';
     ApplicationsModule,
     JobsModule,
     AnalyticsModule,
-    SavedjobsModule,
+    SavedJobsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
