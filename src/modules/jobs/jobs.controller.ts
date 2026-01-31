@@ -1,26 +1,56 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Query } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Query,
+} from '@nestjs/common';
 import { JobsService } from './jobs.service';
 import { CreateJobDto } from './dto/create-job.dto';
 import { UpdateJobDto } from './dto/update-job.dto';
-import { ApiBadRequestResponse, ApiBearerAuth, ApiBody, ApiCreatedResponse, ApiOperation, ApiResponse, ApiTags, ApiTooManyRequestsResponse } from '@nestjs/swagger';
+import {
+  ApiBadRequestResponse,
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+  ApiTooManyRequestsResponse,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { Role } from 'src/common/enums/role';
 import { Roles } from 'src/common/decorators/roles.decorator';
-import { ModerateThrottler, RelaxedThrottler } from 'src/common/decorators/custom-throttler.decorator';
+import {
+  ModerateThrottler,
+  RelaxedThrottler,
+} from 'src/common/decorators/custom-throttler.decorator';
 import { ResponseCreateJobDto } from './dto/response-create-job.dto';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { JobQueryDto } from './dto/job-query.dto';
 
+/**
+ * Jobs API controller
+ */
 @ApiTags('Jobs')
 @ApiBearerAuth()
 @Controller('jobs')
 export class JobsController {
-
   //! DI
-  constructor(private readonly jobsService: JobsService) { }
+  constructor(private readonly jobsService: JobsService) {}
 
-  //! Create Job 
+  /**
+   * Create a new job
+   *
+   * @param createJobDto Job creation payload
+   * @param user Authenticated employer
+   * @returns Created job
+   */
   @Post()
   @ModerateThrottler()
   @UseGuards(JwtAuthGuard, RolesGuard)
@@ -41,14 +71,13 @@ export class JobsController {
   @ApiTooManyRequestsResponse({
     description: 'Too many requests - rate limit exceeded',
   })
-  async create(
-    @Body() createJobDto: CreateJobDto,
-    @GetUser() user: any
-  ) {
+  async create(@Body() createJobDto: CreateJobDto, @GetUser() user: any) {
     return this.jobsService.create(createJobDto, user);
   }
 
-  //! Get All Jobs (Filtered/Paginated) 
+  /**
+   * Get All Jobs (Filtered/Paginated)
+   */
   @Get()
   @RelaxedThrottler()
   @ApiOperation({
@@ -56,7 +85,7 @@ export class JobsController {
   })
   @ApiResponse({
     status: 200,
-    description: "Get all available jobs with filters, search and pagination",
+    description: 'Get all available jobs with filters, search and pagination',
     // type:GetAllJobsResponseDto
   })
   @ApiTooManyRequestsResponse({
@@ -66,9 +95,13 @@ export class JobsController {
     return this.jobsService.findAll(query);
   }
 
-  //! Get All Jobs no pagination
+  /**
+   * Get All Jobs no pagination
+   */
 
-  //! Get Jobs for Employers
+  /**
+   * Get Jobs for Employers
+   */
   @Get('get-jobs-employer')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
@@ -77,7 +110,7 @@ export class JobsController {
   })
   @ApiResponse({
     status: 200,
-    description: "Jobs created by an employer",
+    description: 'Jobs created by an employer',
     // type:GetAllJobsResponseDto
   })
   @ApiTooManyRequestsResponse({
@@ -87,7 +120,9 @@ export class JobsController {
     return this.jobsService.findEmployerJobs(user);
   }
 
-  //! Get Single Job
+  /**
+   * Get Single Job
+   */
   @Get(':id')
   @ApiOperation({
     summary: 'Get a job by id',
@@ -99,14 +134,13 @@ export class JobsController {
   @ApiTooManyRequestsResponse({
     description: 'Too many requests - rate limit exceeded',
   })
-  findOne(
-    @Param('id') id: string,
-    @Query('userId') userId?: string
-  ) {
+  findOne(@Param('id') id: string, @Query('userId') userId?: string) {
     return this.jobsService.findOne(id, userId);
   }
 
-  //! Update Job 
+  /**
+   * Update Job
+   */
   @Patch(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
@@ -115,12 +149,12 @@ export class JobsController {
   })
   @ApiResponse({
     status: 200,
-    description: "Job successfully updated"
+    description: 'Job successfully updated',
     // type:GetAllJobsResponseDto
   })
   @ApiResponse({
     status: 403,
-    description: "Only employer can update a job"
+    description: 'Only employer can update a job',
   })
   @ApiResponse({
     status: 429,
@@ -140,12 +174,14 @@ export class JobsController {
   update(
     @Param('id') id: string,
     @Body() updateJobDto: UpdateJobDto,
-    @GetUser() user: any
+    @GetUser() user: any,
   ) {
     return this.jobsService.update(id, updateJobDto, user);
   }
 
-  //! Delete Job
+  /**
+   * Delete Job
+   */
   @Delete(':id')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
@@ -154,7 +190,7 @@ export class JobsController {
   })
   @ApiResponse({
     status: 200,
-    description: "Delete a job by id",
+    description: 'Delete a job by id',
   })
   @ApiResponse({
     status: 403,
@@ -171,14 +207,13 @@ export class JobsController {
   @ApiTooManyRequestsResponse({
     description: 'Too many requests - rate limit exceeded',
   })
-  remove(
-    @Param('id') id: string,
-    @GetUser() user: any
-  ) {
+  remove(@Param('id') id: string, @GetUser() user: any) {
     return this.jobsService.remove(id, user);
   }
 
-  //! Toggle Close Job
+  /**
+   * Toggle Close Job
+   */
   @Patch(':id/toggle-close')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
@@ -187,7 +222,7 @@ export class JobsController {
   })
   @ApiResponse({
     status: 200,
-    description: "Job closed successfully",
+    description: 'Job closed successfully',
   })
   @ApiResponse({
     status: 403,
@@ -204,10 +239,7 @@ export class JobsController {
   @ApiTooManyRequestsResponse({
     description: 'Too many requests - rate limit exceeded',
   })
-  toggleClose(
-    @Param('id') id: string,
-    @GetUser() user: any
-  ) {
+  toggleClose(@Param('id') id: string, @GetUser() user: any) {
     return this.jobsService.toggleClose(id, user);
   }
 }

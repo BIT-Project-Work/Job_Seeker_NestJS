@@ -7,27 +7,27 @@ export type AnalyticsDocument = Document & Analytics;
 
 @Schema({ timestamps: true })
 export class Analytics {
-    @ApiProperty({ type: String, description: 'Employer User ID' })
-    @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-    employer: Types.ObjectId;
+  @ApiProperty({ type: String, description: 'Employer User ID' })
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  employer: Types.ObjectId;
 
-    @ApiProperty({ example: 0 })
-    @Prop({ default: 0 })
-    totalJobsPosted: number;
+  @ApiProperty({ example: 0 })
+  @Prop({ default: 0 })
+  totalJobsPosted: number;
 
-    @ApiProperty({ example: 0 })
-    @Prop({ default: 0 })
-    totalApplicationsReceived: number;
+  @ApiProperty({ example: 0 })
+  @Prop({ default: 0 })
+  totalApplicationsReceived: number;
 
-    @ApiProperty({ example: 0 })
-    @Prop({ default: 0 })
-    totalHired: number;
+  @ApiProperty({ example: 0 })
+  @Prop({ default: 0 })
+  totalHired: number;
 
-    @ApiProperty()
-    createdAt: Date;
+  @ApiProperty()
+  createdAt: Date;
 
-    @ApiProperty()
-    updatedAt: Date;
+  @ApiProperty()
+  updatedAt: Date;
 }
 
 export const AnalyticsSchema = SchemaFactory.createForClass(Analytics);

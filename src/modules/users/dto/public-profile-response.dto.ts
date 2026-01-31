@@ -2,33 +2,33 @@ import { ApiProperty } from '@nestjs/swagger';
 import { Role } from 'src/common/enums/role';
 
 export class PublicProfileResponseDto {
-    @ApiProperty()
-    _id: string;
+  @ApiProperty()
+  _id: string;
 
-    @ApiProperty()
-    name: string;
+  @ApiProperty()
+  name: string;
 
-    @ApiProperty()
-    email: string;
+  @ApiProperty()
+  email: string;
 
-    @ApiProperty({ enum: Role })
-    role: Role;
+  @ApiProperty({ enum: Role })
+  role: Role;
 
-    @ApiProperty({ required: false })
-    avatar?: string;
+  @ApiProperty({ required: false })
+  avatar?: string;
 
-    @ApiProperty({ required: false })
-    resume?: string;
+  @ApiProperty({ required: false })
+  resume?: string;
 
-    @ApiProperty({ required: false })
-    companyName?: string;
+  @ApiProperty({ required: false })
+  companyName?: string;
 
-    @ApiProperty({ required: false })
-    companyDescription?: string;
+  @ApiProperty({ required: false })
+  companyDescription?: string;
 
-    @ApiProperty({ required: false })
-    companyLogo?: string;
+  @ApiProperty({ required: false })
+  companyLogo?: string;
 
-    @ApiProperty()
-    createdAt: Date;
+  @ApiProperty()
+  createdAt: Date;
 }

@@ -10,8 +10,8 @@ async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-  prefix: '/uploads',
-});
+    prefix: '/uploads',
+  });
 
   // Project description
   app.setGlobalPrefix('api/v1');
@@ -25,15 +25,15 @@ async function bootstrap() {
       transformOptions: {
         enableImplicitConversion: true,
       },
-    })
-  )
+    }),
+  );
 
   // Enable Cors
   app.enableCors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') ?? 'http://localhost:7000',
+    origin: process.env.ALLOWED_ORIGINS?.split(',') ?? 'http://localhost:5173',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   // Enable Swagger docs
@@ -75,7 +75,9 @@ async function bootstrap() {
       operationsSorter: 'alpha',
     },
     customSiteTitle: 'API Documentation',
-    customfavIcon: 'https://www.lemongautam.com.np/logo.svg',
+    // customfavIcon: 'https://www.lemongautam.com.np/logo.svg',
+    customfavIcon: 'https://i.imgur.com/Bk96b3D.png',
+
     customCss: `
       .swagger-ui .topbar {display: none}
       .swagger-ui .info { margin: 50px 0; }

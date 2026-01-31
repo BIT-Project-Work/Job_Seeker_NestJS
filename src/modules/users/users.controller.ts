@@ -1,10 +1,25 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
-import { ApiBearerAuth, ApiOperation, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiParam,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { ProfileResponseDto } from './dto/profile-response.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { DeleteResumeDto } from './dto/delete-resume.dto';
@@ -13,19 +28,24 @@ import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role';
 
+/**
+ *! Users API controller
+ */
 @ApiTags('Users')
 @ApiBearerAuth()
 @Controller('user')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   // @Post()
   // create(@Body() createUserDto: CreateUserDto) {
   //   return this.usersService.create(createUserDto);
   // }
 
-  //! Get all users [ADMIN]
+  /**
+   *! Get all users [ADMIN]
+   */
   @Get()
   @UseGuards(RolesGuard)
   @Roles(Role.ADMIN)
@@ -57,7 +77,9 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  //! Get user by id 
+  /**
+   *! Get users by id
+   */
   @Get(':id')
   // @UseGuards(RolesGuard)
   // @Roles(Role.EMPLOYER)
@@ -89,16 +111,18 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
-  //! Update user profile 
+  /**
+   *! Update user profile
+   */
   @Patch('profile')
   @ApiOperation({
     summary: 'Update a user profile',
-    description: 'Update a user profile'
+    description: 'Update a user profile',
   })
   @ApiResponse({
     status: 200,
     description: 'Profile updated successfully',
-    type: ProfileResponseDto
+    type: ProfileResponseDto,
   })
   @ApiResponse({
     status: 404,
@@ -106,18 +130,22 @@ export class UsersController {
   })
   async updateProfile(
     @GetUser('_id') userId: string,
-    @Body() updateProfileDto: UpdateProfileDto
+    @Body() updateProfileDto: UpdateProfileDto,
   ): Promise<ProfileResponseDto> {
     return this.usersService.updateProfie(userId, updateProfileDto);
   }
 
-  //! Delete a user
+  /**
+   *! Delete a user
+   */
   // @Delete(':id')
   // remove(@Param('id') id: string) {
   //   return this.usersService.remove(id);
   // }
 
-  //! Deletes a resume
+  /**
+   *! Delete a resume
+   */
   @Delete('resume')
   @UseGuards(RolesGuard)
   @Roles(Role.JOBSEEKER)
@@ -147,12 +175,14 @@ export class UsersController {
   })
   async removeResume(
     @GetUser('_id') userId: string,
-    @Body() deleteResumeDto: DeleteResumeDto
+    @Body() deleteResumeDto: DeleteResumeDto,
   ) {
     return this.usersService.deleteResume(userId, deleteResumeDto);
   }
 
-  //! Get Public profile
+  /**
+   *! Get Public Profile
+   */
   @Get('public/:id')
   @ApiOperation({
     summary: 'Displays a users public profile',
@@ -160,7 +190,7 @@ export class UsersController {
   @ApiResponse({
     status: 200,
     description: 'Profile updated successfully',
-    type: PublicProfileResponseDto
+    type: PublicProfileResponseDto,
   })
   @ApiResponse({
     status: 404,

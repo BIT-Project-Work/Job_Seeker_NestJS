@@ -9,10 +9,10 @@ import { Job, JobSchema } from '../jobs/schemas/job.schema';
   imports: [
     MongooseModule.forFeature([
       { name: SavedJob.name, schema: SavedJobSchema },
-      { name: Job.name, schema: JobSchema }
-    ])
+      { name: Job.name, schema: JobSchema },
+    ]),
   ],
   controllers: [SavedJobsController],
   providers: [SavedjobsService],
 })
-export class SavedjobsModule { }
+export class SavedjobsModule {}

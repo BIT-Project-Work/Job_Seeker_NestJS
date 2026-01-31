@@ -1,6 +1,5 @@
 export enum Role {
-    JOBSEEKER = 'JOBSEEKER',
-    EMPLOYER = 'EMPLOYER',
-    ADMIN = 'ADMIN'
+  JOBSEEKER = 'JOBSEEKER',
+  EMPLOYER = 'EMPLOYER',
+  ADMIN = 'ADMIN',
 }
-

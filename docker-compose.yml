@@ -1,0 +1,10 @@
+
+services:
+  backend:
+    build: .
+    container_name: jobseeker_backend
+    restart: always
+    env_file:
+      - .env
+    ports: 
+      - "7000:7000"

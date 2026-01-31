@@ -9,83 +9,81 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema({ timestamps: true })
 export class User {
+  _id: Types.ObjectId;
 
-    _id: Types.ObjectId;
+  createdAt: Date;
+  updatedAt: Date;
 
-    createdAt: Date;
-    updatedAt: Date;
+  @ApiProperty({
+    example: 'John Doe',
+    description: 'Provide Username',
+    required: true,
+  })
+  @Prop({ required: true })
+  name: string;
 
-    @ApiProperty({
-        example: "John Doe",
-        description: "Provide Username",
-        required: true
-    })
-    @Prop({ required: true })
-    name: string;
+  @ApiProperty({
+    example: 'johndoe@gmail.com',
+    description: 'Provide the email of the User',
+    required: true,
+  })
+  @Prop({ required: true, unique: true, lowercase: true })
+  email: string;
 
-    @ApiProperty({
-        example: "johndoe@gmail.com",
-        description: "Provide the email of the User",
-        required: true
-    })
-    @Prop({ required: true, unique: true, lowercase: true })
-    email: string;
+  @ApiProperty({
+    example: '******',
+    description: 'Provide the password of the User',
+    required: true,
+  })
+  @Prop({
+    required: true,
+  })
+  password: string;
 
-    @ApiProperty({
-        example: "******",
-        description: "Provide the password of the User",
-        required: true
-    })
-    @Prop({
-        required: true,
-    })
-    password: string;
+  @ApiProperty({
+    example: 'JOBSEEKER|EMPLOYER|ADMIN',
+    description: 'Provide the role of the User',
+    required: true,
+  })
+  @Prop({ required: true, enum: Role, default: Role.JOBSEEKER })
+  role: Role;
 
-    @ApiProperty({
-        example: "JOBSEEKER|EMPLOYER|ADMIN",
-        description: "Provide the role of the User",
-        required: true
-    })
-    @Prop({ required: true, enum: Role, default: Role.JOBSEEKER })
-    role: Role;
+  @ApiProperty({
+    example: 'janedone.jpg',
+    description: 'Provide the avatar of the User',
+  })
+  @Prop()
+  avatar?: string;
 
-    @ApiProperty({
-        example: "janedone.jpg",
-        description: "Provide the avatar of the User",
+  @ApiProperty({
+    example: 'janedone.jpg',
+    description: 'Provide the resume of the User',
+  })
+  @Prop()
+  resume?: string;
 
-    })
-    @Prop()
-    avatar?: string;
+  @ApiProperty({
+    example: 'Company Name Pvt. Ltd',
+    description: 'Provide the name of the company',
+  })
+  @Prop()
+  companyName?: string;
 
-    @ApiProperty({
-        example: "janedone.jpg",
-        description: "Provide the resume of the User",
-    })
-    @Prop()
-    resume?: string;
+  @ApiProperty({
+    example: 'Company Description',
+    description: 'Provide the Description of the company',
+  })
+  @Prop()
+  companyDescription?: string;
 
-    @ApiProperty({
-        example: "Company Name Pvt. Ltd",
-        description: "Provide the name of the company",
-    })
-    @Prop()
-    companyName?: string;
+  @ApiProperty({
+    example: 'companylogo.jpg',
+    description: 'Provide the logo of the Company',
+  })
+  @Prop()
+  companyLogo?: string;
 
-    @ApiProperty({
-        example: "Company Description",
-        description: "Provide the Description of the company",
-    })
-    @Prop()
-    companyDescription?: string;
-
-    @ApiProperty({
-        example: "companylogo.jpg",
-        description: "Provide the logo of the Company",
-    })
-    @Prop()
-    companyLogo?: string;
-
-    matchPassword: (enteredPassword: string) => Promise<boolean>;
+  matchPassword: (enteredPassword: string) => Promise<boolean>;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
