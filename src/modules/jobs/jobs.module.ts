@@ -7,10 +7,8 @@ import {
   Application,
   ApplicationSchema,
 } from '../applications/schemas/application.schema';
-import {
-  SavedJob,
-  SavedJobSchema,
-} from '../savedJobs/schemas/saved-job.schema';
+import { SavedJob, SavedJobSchema } from '../savedJobs/schemas/saved-job.schema';
+
 
 @Module({
   imports: [
@@ -23,4 +21,4 @@ import {
   controllers: [JobsController],
   providers: [JobsService],
 })
-export class JobsModule {}
+export class JobsModule { }

@@ -17,9 +17,9 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
-import { SavedjobsService } from './jobs/savedjobs.service';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums/role';
+import { SavedjobsService } from './jobs/savedjobs.service';
 
 /**
  *! Saved Jobs API controller

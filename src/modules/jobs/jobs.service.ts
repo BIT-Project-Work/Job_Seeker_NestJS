@@ -12,10 +12,8 @@ import {
   Application,
   ApplicationDocument,
 } from '../applications/schemas/application.schema';
-import {
-  SavedJob,
-  SavedJobDocument,
-} from '../savedJobs/schemas/saved-job.schema';
+// import { SavedJob, SavedJobDocument } from '../savedJobs/schemas/saved-job.schema';
+import { SavedJob, SavedJobDocument } from '../savedJobs/schemas/saved-job.schema';
 import { JobQueryDto } from './dto/job-query.dto';
 import { ApplicationStatus } from 'src/common/enums/applicationStatus';
 
@@ -29,7 +27,7 @@ export class JobsService {
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
     @InjectModel(Application.name) private appModel: Model<ApplicationDocument>,
     @InjectModel(SavedJob.name) private savedJobModel: Model<SavedJobDocument>,
-  ) {}
+  ) { }
 
   /**
    *! Create Job
