@@ -1,6 +1,11 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { AnalyticsService } from './analytics.service';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { EmployerAnalyticsResponseDto } from './dto/analytics-response.dto';
 
@@ -11,9 +16,8 @@ import { EmployerAnalyticsResponseDto } from './dto/analytics-response.dto';
 @ApiBearerAuth()
 @Controller('analytics')
 export class AnalyticsController {
-
-  //! DI 
-  constructor(private readonly analyticsService: AnalyticsService) { }
+  //! DI
+  constructor(private readonly analyticsService: AnalyticsService) {}
 
   /**
    *! Get Employer Analytics
@@ -26,7 +30,7 @@ export class AnalyticsController {
   @ApiResponse({
     status: 200,
     description: 'Analytics Overview',
-    type: EmployerAnalyticsResponseDto
+    type: EmployerAnalyticsResponseDto,
   })
   @ApiResponse({
     status: 500,
@@ -37,6 +41,9 @@ export class AnalyticsController {
     description: 'Too Many Requests',
   })
   getEmployerAnalytics(@Req() req): Promise<EmployerAnalyticsResponseDto> {
-    return this.analyticsService.getEmployerAnalytics(req.user._id, req.user.role);
+    return this.analyticsService.getEmployerAnalytics(
+      req.user._id,
+      req.user.role,
+    );
   }
 }

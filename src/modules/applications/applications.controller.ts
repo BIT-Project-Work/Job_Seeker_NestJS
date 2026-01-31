@@ -1,8 +1,24 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
 import { ApplicationsService } from './applications.service';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { UpdateApplicationStatusDto } from './dto/update-application.dto';
-import { ApiBearerAuth, ApiForbiddenResponse, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiForbiddenResponse,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
@@ -16,18 +32,17 @@ import { Role } from 'src/common/enums/role';
 @Controller('applications')
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ApplicationsController {
-
-  //! DI 
-  constructor(private readonly applicationsService: ApplicationsService) { }
+  //! DI
+  constructor(private readonly applicationsService: ApplicationsService) {}
 
   /**
- *! Apply to a Job
- */
+   *! Apply to a Job
+   */
   @Post(':jobId')
   @Roles(Role.JOBSEEKER)
   @ApiOperation({
     summary: 'Apply to a job',
-    description: 'Creates a new user account'
+    description: 'Creates a new user account',
   })
   @ApiResponse({
     status: 201,
@@ -54,12 +69,16 @@ export class ApplicationsController {
   //   description: 'Only Job Seeker can apply to a job',
   // })
   async applyToJob(@Req() req, @Param('jobId') jobId: string) {
-    return this.applicationsService.applyToJob(req.user, jobId, req.user.resume);
+    return this.applicationsService.applyToJob(
+      req.user,
+      jobId,
+      req.user.resume,
+    );
   }
 
   /**
- *! Get My Own Application [JOBSEEKER]
- */
+   *! Get My Own Application [JOBSEEKER]
+   */
   @Get('me')
   @Roles(Role.JOBSEEKER)
   @ApiOperation({
@@ -86,8 +105,8 @@ export class ApplicationsController {
   }
 
   /**
- *! Get all the applicants (users) who have applied for a job [EMPLOYER] 
- */
+   *! Get all the applicants (users) who have applied for a job [EMPLOYER]
+   */
   @Get('job/:jobId')
   @Roles(Role.EMPLOYER)
   @ApiOperation({
@@ -119,8 +138,8 @@ export class ApplicationsController {
   }
 
   /**
- *! Get Application by Id 
- */
+   *! Get Application by Id
+   */
   @Get(':id')
   @Roles(Role.EMPLOYER)
   @ApiOperation({
@@ -152,8 +171,8 @@ export class ApplicationsController {
   }
 
   /**
-*!  Update an application
-*/
+   *!  Update an application
+   */
   @Patch(':id/status')
   @Roles(Role.EMPLOYER)
   @ApiOperation({
@@ -176,8 +195,11 @@ export class ApplicationsController {
     status: 500,
     description: 'Internal Server Error',
   })
-  async updateStatus(@Req() req, @Param('id') id: string, @Body() dto: UpdateApplicationStatusDto) {
+  async updateStatus(
+    @Req() req,
+    @Param('id') id: string,
+    @Body() dto: UpdateApplicationStatusDto,
+  ) {
     return this.applicationsService.updateStatus(id, req.user._id, dto.status);
   }
-
 }

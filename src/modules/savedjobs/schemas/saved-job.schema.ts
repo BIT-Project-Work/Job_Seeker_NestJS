@@ -8,19 +8,19 @@ export type SavedJobDocument = Document & SavedJob;
 
 @Schema({ timestamps: true })
 export class SavedJob {
-    @ApiProperty({ type: String, description: 'Jobseeker User ID' })
-    @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-    jobseeker: Types.ObjectId;
+  @ApiProperty({ type: String, description: 'Jobseeker User ID' })
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  jobseeker: Types.ObjectId;
 
-    @ApiProperty({ type: String, description: 'Job ID' })
-    @Prop({ type: Types.ObjectId, ref: Job.name, required: true })
-    job: Types.ObjectId;
+  @ApiProperty({ type: String, description: 'Job ID' })
+  @Prop({ type: Types.ObjectId, ref: Job.name, required: true })
+  job: Types.ObjectId;
 
-    @ApiProperty()
-    createdAt: Date;
+  @ApiProperty()
+  createdAt: Date;
 
-    @ApiProperty()
-    updatedAt: Date;
+  @ApiProperty()
+  updatedAt: Date;
 }
 
 export const SavedJobSchema = SchemaFactory.createForClass(SavedJob);

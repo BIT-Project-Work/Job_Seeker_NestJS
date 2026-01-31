@@ -12,9 +12,9 @@ import { MailModule } from '../mail/mail.module';
       { name: Application.name, schema: ApplicationSchema },
       { name: Job.name, schema: JobSchema },
     ]),
-    MailModule
+    MailModule,
   ],
   controllers: [ApplicationsController],
   providers: [ApplicationsService],
 })
-export class ApplicationsModule { }
+export class ApplicationsModule {}

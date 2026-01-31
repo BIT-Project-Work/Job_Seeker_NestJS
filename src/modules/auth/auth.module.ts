@@ -17,19 +17,20 @@ import { User, UserSchema } from '../users/schemas/user.schema';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('JWT_SECRET') ?? 'defaultsecretkey',
         signOptions: {
-          expiresIn: Number(configService.get<number>('JWT_EXPIRES_IN')) || '7d'
-        }
-      })
+          expiresIn:
+            Number(configService.get<number>('JWT_EXPIRES_IN')) || '7d',
+        },
+      }),
     }),
-    MongooseModule.forFeature([{
-      name: User.name, schema: UserSchema
-    }]),
+    MongooseModule.forFeature([
+      {
+        name: User.name,
+        schema: UserSchema,
+      },
+    ]),
     UsersModule,
   ],
   controllers: [AuthController],
-  providers: [
-    AuthService,
-    JwtStrategy
-  ]
+  providers: [AuthService, JwtStrategy],
 })
-export class AuthModule { }
+export class AuthModule {}

@@ -1,0 +1,14 @@
+1. Create .env file and add db_uri, port, etc for both backend and frontend
+
+client/.env
+VITE_API_URL=http://localhost:5000/api
+
+server/.env
+PORT=5000
+MONGO_URI=
+
+2. Add .env to gitignore to prevent the .env from being pushed to github
+
+Docker Setup
+
+3. 

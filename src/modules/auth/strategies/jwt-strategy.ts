@@ -7,34 +7,32 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from 'src/modules/users/schemas/user.schema';
 
 interface JwtPayload {
-    sub: string;
-    email: string;
-    role: string;
+  sub: string;
+  email: string;
+  role: string;
 }
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-    constructor(
-        @InjectModel(User.name)
-        private readonly userModel: Model<UserDocument>,
-        private readonly configService: ConfigService,
-    ) {
-        super({
-            jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-            ignoreExpiration: false,
-            secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
-        });
+  constructor(
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
+    private readonly configService: ConfigService,
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: configService.getOrThrow<string>('JWT_SECRET'),
+    });
+  }
+
+  async validate(payload: JwtPayload) {
+    const user = await this.userModel.findById(payload.sub).select('-password');
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
     }
 
-    async validate(payload: JwtPayload) {
-        const user = await this.userModel
-            .findById(payload.sub)
-            .select('-password');
-
-        if (!user) {
-            throw new UnauthorizedException('User not found');
-        }
-
-        return user; // attaches to req.user
-    }
+    return user; // attaches to req.user
+  }
 }

@@ -25,15 +25,15 @@ async function bootstrap() {
       transformOptions: {
         enableImplicitConversion: true,
       },
-    })
-  )
+    }),
+  );
 
   // Enable Cors
   app.enableCors({
-    origin: process.env.ALLOWED_ORIGINS?.split(',') ?? 'http://localhost:7000',
+    origin: process.env.ALLOWED_ORIGINS?.split(',') ?? 'http://localhost:5173',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+    allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
   });
 
   // Enable Swagger docs

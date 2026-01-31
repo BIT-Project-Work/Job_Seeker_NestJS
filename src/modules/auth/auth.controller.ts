@@ -1,6 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, HttpCode, HttpStatus, UseGuards, Req, UseInterceptors, UploadedFile, BadRequestException } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  HttpCode,
+  HttpStatus,
+  UseGuards,
+  Req,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { ApiBearerAuth, ApiBody, ApiConsumes, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { RegisterDto } from './dto/register.dto';
 import { GetUser } from 'src/common/decorators/get-user.decorator';
@@ -21,27 +43,26 @@ import { RegisterResponseDto } from './dto/register-response.dto';
 @ApiTags('Authentication')
 @Controller('auth')
 export class AuthController {
-
   //! DI
   constructor(
     private readonly authService: AuthService,
     private usersService: UsersService,
-    private jwtService: JwtService
-  ) { }
+    private jwtService: JwtService,
+  ) {}
 
   /**
- *! Register/ SignUp User
- */
+   *! Register/ SignUp User
+   */
   @Post('register')
   @HttpCode(201)
   @ApiOperation({
     summary: 'Register a new user',
-    description: 'Creates a new user account'
+    description: 'Creates a new user account',
   })
   @ApiResponse({
     status: 201,
     description: 'User successfully registered',
-    type: RegisterResponseDto
+    type: RegisterResponseDto,
   })
   @ApiResponse({
     status: 400,
@@ -55,23 +76,25 @@ export class AuthController {
     status: 429,
     description: 'Too Many Requests',
   })
-  async register(@Body() registerDto: RegisterDto): Promise<RegisterResponseDto> {
+  async register(
+    @Body() registerDto: RegisterDto,
+  ): Promise<RegisterResponseDto> {
     return this.authService.register(registerDto);
   }
 
   /**
- *! Login User
- */
+   *! Login User
+   */
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Login user',
-    description: 'Authenticates a user and returns access and refresh tokens'
+    description: 'Authenticates a user and returns access and refresh tokens',
   })
   @ApiResponse({
     status: 200,
     description: 'User successfully logged in',
-    type: LoginResponseDto
+    type: LoginResponseDto,
   })
   @ApiResponse({
     status: 401,
@@ -171,15 +194,15 @@ export class AuthController {
   // }
 
   /**
- *! Logout user and invalidate refresh token
- */
+   *! Logout user and invalidate refresh token
+   */
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth('JWT-auth')
   @ApiOperation({
     summary: 'Logout user',
-    description: 'Logs out the user and invalidates the refresh token'
+    description: 'Logs out the user and invalidates the refresh token',
   })
   @ApiResponse({
     status: 200,
@@ -196,13 +219,13 @@ export class AuthController {
   async logout(@GetUser('id') userId: string): Promise<{ message: string }> {
     await this.authService.logout(userId);
     return {
-      message: "Successfully logged out"
-    }
+      message: 'Successfully logged out',
+    };
   }
 
   /**
- *! Get Current User Info/ Logged in User Details
- */
+   *! Get Current User Info/ Logged in User Details
+   */
   @UseGuards(JwtAuthGuard)
   @Get('me')
   @HttpCode(HttpStatus.OK)
@@ -212,15 +235,15 @@ export class AuthController {
   @ApiResponse({
     status: 200,
     description: 'Password Succeessfully reset',
-    type: AuthResponseDto
+    type: AuthResponseDto,
   })
   async getMe(@Req() req: any) {
     return req.user;
   }
 
   /**
- *! Post image
- */
+   *! Post image
+   */
   @Post('upload-image')
   @HttpCode(HttpStatus.OK)
   @ApiConsumes('multipart/form-data')
@@ -239,20 +262,16 @@ export class AuthController {
   })
   @ApiOperation({ summary: 'Upload a file' })
   @UseInterceptors(FileInterceptor('file', multerOptions))
-  uploadImage(
-    @UploadedFile() file: Express.Multer.File,
-    @Req() req: Request,
-  ) {
-
+  uploadImage(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
     // console.log(file)
     if (!file) {
-      throw new BadRequestException('No file uploaded')
+      throw new BadRequestException('No file uploaded');
     }
 
     const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
 
     return {
-      imageUrl
-    }
+      imageUrl,
+    };
   }
 }

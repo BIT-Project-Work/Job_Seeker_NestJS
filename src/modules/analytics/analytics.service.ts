@@ -2,7 +2,10 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Job, JobDocument } from '../jobs/schemas/job.schema';
 import { Model, Types } from 'mongoose';
-import { Application, ApplicationDocument } from '../applications/schemas/application.schema';
+import {
+  Application,
+  ApplicationDocument,
+} from '../applications/schemas/application.schema';
 import { EmployerAnalyticsResponseDto } from './dto/analytics-response.dto';
 import { getTrend } from 'src/common/utils/trends.util';
 
@@ -20,15 +23,15 @@ interface PopulatedJob {
  */
 @Injectable()
 export class AnalyticsService {
-
   constructor(
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
-    @InjectModel(Application.name) private applicationModel: Model<ApplicationDocument>,
-  ) { }
+    @InjectModel(Application.name)
+    private applicationModel: Model<ApplicationDocument>,
+  ) {}
 
   /**
- *! Employer analytics
- */
+   *! Employer analytics
+   */
   async getEmployerAnalytics(
     userId: Types.ObjectId,
     role: string,
@@ -53,7 +56,7 @@ export class AnalyticsService {
       .find({ company: userId })
       .select('_id')
       .lean();
-    const jobIds = jobs.map(job => job._id);
+    const jobIds = jobs.map((job) => job._id);
 
     const totalApplications = await this.applicationModel.countDocuments({
       job: { $in: jobIds },
@@ -70,18 +73,52 @@ export class AnalyticsService {
       filter: Record<string, any>,
       start: Date,
       end: Date,
-    ) => model.countDocuments({ ...filter, createdAt: { $gte: start, $lte: end } });
+    ) =>
+      model.countDocuments({
+        ...filter,
+        createdAt: { $gte: start, $lte: end },
+      });
 
-    const activeJobsLast7 = await countInPeriod(this.jobModel, { company: userId }, last7Days, now);
-    const activeJobsPrev7 = await countInPeriod(this.jobModel, { company: userId }, prev7Days, last7Days);
+    const activeJobsLast7 = await countInPeriod(
+      this.jobModel,
+      { company: userId },
+      last7Days,
+      now,
+    );
+    const activeJobsPrev7 = await countInPeriod(
+      this.jobModel,
+      { company: userId },
+      prev7Days,
+      last7Days,
+    );
     const activeJobTrend = getTrend(activeJobsLast7, activeJobsPrev7);
 
-    const applicationsLast7 = await countInPeriod(this.applicationModel, { job: { $in: jobIds } }, last7Days, now);
-    const applicationsPrev7 = await countInPeriod(this.applicationModel, { job: { $in: jobIds } }, prev7Days, last7Days);
+    const applicationsLast7 = await countInPeriod(
+      this.applicationModel,
+      { job: { $in: jobIds } },
+      last7Days,
+      now,
+    );
+    const applicationsPrev7 = await countInPeriod(
+      this.applicationModel,
+      { job: { $in: jobIds } },
+      prev7Days,
+      last7Days,
+    );
     const applicantTrend = getTrend(applicationsLast7, applicationsPrev7);
 
-    const hiredLast7 = await countInPeriod(this.applicationModel, { job: { $in: jobIds }, status: 'Accepted' }, last7Days, now);
-    const hiredPrev7 = await countInPeriod(this.applicationModel, { job: { $in: jobIds }, status: 'Accepted' }, prev7Days, last7Days);
+    const hiredLast7 = await countInPeriod(
+      this.applicationModel,
+      { job: { $in: jobIds }, status: 'Accepted' },
+      last7Days,
+      now,
+    );
+    const hiredPrev7 = await countInPeriod(
+      this.applicationModel,
+      { job: { $in: jobIds }, status: 'Accepted' },
+      prev7Days,
+      last7Days,
+    );
     const hiredTrend = getTrend(hiredLast7, hiredPrev7);
 
     // === RECENT DATA ===
@@ -99,17 +136,17 @@ export class AnalyticsService {
       .populate('applicant', 'name email avatar')
       .populate('job', 'title')
       .lean()) as unknown as Array<{
-        applicant: {
-          name: string;
-          email: string;
-          avatar?: string;
-        };
-        job: {
-          title: string;
-        };
-        status: string;
-        createdAt: Date;
-      }>;
+      applicant: {
+        name: string;
+        email: string;
+        avatar?: string;
+      };
+      job: {
+        title: string;
+      };
+      status: string;
+      createdAt: Date;
+    }>;
 
     // const recentApplicationsDto = recentApplications.map(app => ({
     //   applicant: {
@@ -124,7 +161,7 @@ export class AnalyticsService {
     //   createdAt: app.createdAt,
     // }));
 
-    const recentApplicationsDto = recentApplications.map(app => ({
+    const recentApplicationsDto = recentApplications.map((app) => ({
       applicant: {
         name: app.applicant.name,
         email: app.applicant.email,
@@ -136,7 +173,6 @@ export class AnalyticsService {
       status: app.status,
       createdAt: app.createdAt,
     }));
-
 
     return {
       counts: {
@@ -155,5 +191,4 @@ export class AnalyticsService {
       },
     };
   }
-
 }

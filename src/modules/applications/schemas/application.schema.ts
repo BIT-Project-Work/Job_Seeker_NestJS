@@ -9,31 +9,31 @@ export type ApplicationDocument = Document & Application;
 
 @Schema({ timestamps: true })
 export class Application {
-    @ApiProperty({ type: String, description: 'Job ID' })
-    @Prop({ type: Types.ObjectId, ref: Job.name, required: true })
-    job: Types.ObjectId;
+  @ApiProperty({ type: String, description: 'Job ID' })
+  @Prop({ type: Types.ObjectId, ref: Job.name, required: true })
+  job: Types.ObjectId;
 
-    @ApiProperty({ type: String, description: 'Applicant User ID' })
-    @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-    applicant: Types.ObjectId;
+  @ApiProperty({ type: String, description: 'Applicant User ID' })
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  applicant: Types.ObjectId;
 
-    @ApiProperty({
-        example: 'uploads/resume.pdf',
-        description: 'Uploaded resume URL or file path',
-        required: false,
-    })
-    @Prop()
-    resume?: string;
+  @ApiProperty({
+    example: 'uploads/resume.pdf',
+    description: 'Uploaded resume URL or file path',
+    required: false,
+  })
+  @Prop()
+  resume?: string;
 
-    @ApiProperty({ enum: ApplicationStatus, default: ApplicationStatus.APPLIED })
-    @Prop({ enum: ApplicationStatus, default: ApplicationStatus.APPLIED })
-    status: ApplicationStatus;
+  @ApiProperty({ enum: ApplicationStatus, default: ApplicationStatus.APPLIED })
+  @Prop({ enum: ApplicationStatus, default: ApplicationStatus.APPLIED })
+  status: ApplicationStatus;
 
-    @ApiProperty()
-    createdAt: Date;
+  @ApiProperty()
+  createdAt: Date;
 
-    @ApiProperty()
-    updatedAt: Date;
+  @ApiProperty()
+  updatedAt: Date;
 }
 
 export const ApplicationSchema = SchemaFactory.createForClass(Application);

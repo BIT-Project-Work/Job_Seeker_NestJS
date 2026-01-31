@@ -1,4 +1,9 @@
-import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { CreateApplicationDto } from './dto/create-application.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { Application, ApplicationDocument } from './schemas/application.schema';
@@ -8,28 +13,30 @@ import { ApplicationStatus } from 'src/common/enums/applicationStatus';
 import { MailService } from '../mail/mail.service';
 
 /**
-*! Job Application Service
-*/
+ *! Job Application Service
+ */
 @Injectable()
 export class ApplicationsService {
-
-  //! DI 
+  //! DI
   constructor(
-    @InjectModel(Application.name) private applicationModel: Model<ApplicationDocument>,
+    @InjectModel(Application.name)
+    private applicationModel: Model<ApplicationDocument>,
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
-    private readonly mailService: MailService
-  ) { }
+    private readonly mailService: MailService,
+  ) {}
 
   /**
- *! Apply to Job
- */
+   *! Apply to Job
+   */
   async applyToJob(user: any, jobId: string, resume?: string) {
-
     if (user.role !== 'JOBSEEKER') {
       throw new ForbiddenException('Only jobseekers can apply');
     }
 
-    const existing = await this.applicationModel.findOne({ job: jobId, applicant: user._id });
+    const existing = await this.applicationModel.findOne({
+      job: jobId,
+      applicant: user._id,
+    });
     if (existing) throw new BadRequestException('Already applied to this job');
 
     const application = await this.applicationModel.create({
@@ -42,8 +49,8 @@ export class ApplicationsService {
   }
 
   /**
- *! Get My Applications
- */
+   *! Get My Applications
+   */
   async getMyApplications(userId: Types.ObjectId) {
     return this.applicationModel
       .find({ applicant: userId })
@@ -52,11 +59,11 @@ export class ApplicationsService {
   }
 
   /**
- *! Get Applicants for Job
- */
+   *! Get Applicants for Job
+   */
   async getApplicantsForJob(jobId: string, userId: Types.ObjectId) {
-
-    const uid = typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
+    const uid =
+      typeof userId === 'string' ? new Types.ObjectId(userId) : userId;
     const job = await this.jobModel.findById(jobId);
     if (!job || !job.company.equals(uid)) {
       throw new ForbiddenException('Not authorized to view applicants');
@@ -69,8 +76,8 @@ export class ApplicationsService {
   }
 
   /**
- *! Get Application By Id
- */
+   *! Get Application By Id
+   */
   async getApplicationById(applicationId: string, userId: Types.ObjectId) {
     const app = await this.applicationModel
       .findById(applicationId)
@@ -79,31 +86,40 @@ export class ApplicationsService {
 
     if (!app) throw new NotFoundException('Application not found');
 
-    const job = app.job as unknown as { _id: Types.ObjectId; title: string; company: Types.ObjectId };
+    const job = app.job as unknown as {
+      _id: Types.ObjectId;
+      title: string;
+      company: Types.ObjectId;
+    };
     const applicant = app.applicant as unknown as { _id: Types.ObjectId };
 
     const isOwner =
       applicant._id.toString() === userId.toString() ||
       job.company.toString() === userId.toString();
 
-    if (!isOwner) throw new ForbiddenException('Not authorized to view this application');
+    if (!isOwner)
+      throw new ForbiddenException('Not authorized to view this application');
 
     return app;
   }
 
   /**
- *! Update Status
- */
-  async updateStatus(applicationId: string, userId: Types.ObjectId, status: ApplicationStatus) {
-
-    const app = await this.applicationModel.findById(applicationId)
+   *! Update Status
+   */
+  async updateStatus(
+    applicationId: string,
+    userId: Types.ObjectId,
+    status: ApplicationStatus,
+  ) {
+    const app = await this.applicationModel
+      .findById(applicationId)
       .populate({
         path: 'job',
-        select: 'title company',        // select the fields from job
+        select: 'title company', // select the fields from job
         populate: {
           path: 'company',
-          select: 'companyName'         // select only companyName from the company
-        }
+          select: 'companyName', // select only companyName from the company
+        },
       })
       .populate('applicant', 'name email'); // applicant fields
 
@@ -117,7 +133,7 @@ export class ApplicationsService {
 
     const job = app.job as any;
     const applicant = app.applicant as any;
-    const companyName = job.company?.companyName || "the company"; // fallback
+    const companyName = job.company?.companyName || 'the company'; // fallback
 
     if (job.company._id.toString() !== userId.toString()) {
       throw new ForbiddenException('Not authorized to update this application');
@@ -161,7 +177,6 @@ export class ApplicationsService {
           </p>
         </div>
       `;
-
 
     await this.mailService.sendMail(applicant.email, subject, message, message);
 

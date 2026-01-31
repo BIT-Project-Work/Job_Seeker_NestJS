@@ -1,4 +1,10 @@
-import { BadRequestException, ConflictException, Injectable, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { randomBytes } from 'crypto';
 import { RegisterDto } from './dto/register.dto';
@@ -13,19 +19,18 @@ import { RegisterResponseDto } from './dto/register-response.dto';
 import { LoginResponseDto } from './dto/login-response.dto';
 
 /**
-  *! Auth Service
-  */
+ *! Auth Service
+ */
 @Injectable()
 export class AuthService {
-
   private readonly SALT_ROUNDS = 10;
 
-  //! Dependency Injection 
+  //! Dependency Injection
   constructor(
     @InjectModel(User.name) private UserModel: Model<User>,
     private jwtService: JwtService,
-    private usersService: UsersService
-  ) { }
+    private usersService: UsersService,
+  ) {}
 
   //? Generate access and response tokens
   // private async generateTokens(
@@ -65,81 +70,79 @@ export class AuthService {
       avatar: user.avatar,
       role: user.role,
       token: this.generateToken(user._id),
-      companyName: user.companyName || "",
-      companyDescription: user.companyDescription || "",
-      companyLogo: user.companyLogo || "",
-      resume: user.resume || ""
-    }
+      companyName: user.companyName || '',
+      companyDescription: user.companyDescription || '',
+      companyLogo: user.companyLogo || '',
+      resume: user.resume || '',
+    };
   }
 
   /**
-  *! Register a new user
-  */
+   *! Register a new user
+   */
   async register(registerDto: RegisterDto): Promise<RegisterResponseDto> {
-
     const { name, email, password, avatar, role } = registerDto;
 
-    const emailInUse = await this.usersService.findByEmail(email)
+    const emailInUse = await this.usersService.findByEmail(email);
     if (emailInUse) {
-      throw new BadRequestException("User with this email already exists")
+      throw new BadRequestException('User with this email already exists');
     }
 
     try {
-      const hashedPassword = await bcrypt.hash(password, this.SALT_ROUNDS)
+      const hashedPassword = await bcrypt.hash(password, this.SALT_ROUNDS);
       const user = await this.UserModel.create({
         name,
         email,
         password: hashedPassword,
         role,
-        avatar
-      })
+        avatar,
+      });
 
       return this.buildResponse(user);
-    }
-    catch (error) {
-      console.error("Error during user registration:", error);
-      throw new InternalServerErrorException("An error occured during registration")
+    } catch (error) {
+      console.error('Error during user registration:', error);
+      throw new InternalServerErrorException(
+        'An error occured during registration',
+      );
     }
   }
 
   /**
-  *! Login User
-  */
+   *! Login User
+   */
   async login(loginDto: LoginDto): Promise<LoginResponseDto> {
     const { email, password } = loginDto;
 
     const user = await this.usersService.findByEmail(email);
 
-    if (!user || !(await bcrypt.compare(password.trim(), user.password.trim()))) {
-      throw new UnauthorizedException('Invalid email or password')
+    if (
+      !user ||
+      !(await bcrypt.compare(password.trim(), user.password.trim()))
+    ) {
+      throw new UnauthorizedException('Invalid email or password');
     }
 
     return this.buildResponse(user);
   }
 
   /**
-  *! Auth Service
-  */
+   *! Auth Service
+   */
   //! Logout
-  async logout(userId: string): Promise<void> {
-
-  }
-
+  async logout(userId: string): Promise<void> {}
 
   //! Upload image
-  async uploadAvatar(avatarImage: String) {
-
-  }
+  async uploadAvatar(avatarImage: String) {}
 
   //! Refresh access token
-  async refreshTokens(userId: string) { }
+  async refreshTokens(userId: string) {}
 
   //! Forgot password
-  async forgotPassword() { }
+  async forgotPassword() {}
 
   //! Verify Otp
-  async verifyOtp() { }
+  async verifyOtp() {}
 
   //! Reset Password
-  async resetPassword() { }
+  async resetPassword() {}
 }

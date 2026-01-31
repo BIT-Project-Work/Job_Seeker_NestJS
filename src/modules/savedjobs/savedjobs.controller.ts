@@ -1,5 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseGuards,
+  Req,
+} from '@nestjs/common';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { RolesGuard } from 'src/common/guards/roles.guard';
 import { SavedjobsService } from './savedjobs.service';
@@ -15,13 +30,12 @@ import { Role } from 'src/common/enums/role';
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.JOBSEEKER)
 export class SavedJobsController {
-
-  //! DI 
-  constructor(private readonly savedJobsService: SavedjobsService) { }
+  //! DI
+  constructor(private readonly savedJobsService: SavedjobsService) {}
 
   /**
- *! Save a job for later
- */
+   *! Save a job for later
+   */
   @Post(':jobId')
   @ApiOperation({
     summary: 'Save a job',
@@ -52,8 +66,8 @@ export class SavedJobsController {
   }
 
   /**
- *! Unsave a job 
- */
+   *! Unsave a job
+   */
   @Delete(':jobId')
   @ApiOperation({
     summary: 'Unsave a job',
@@ -84,8 +98,8 @@ export class SavedJobsController {
   }
 
   /**
- *! Get all the saved job by me 
- */
+   *! Get all the saved job by me
+   */
   @Get('my')
   @ApiOperation({
     summary: 'Get all my saved jobs',
