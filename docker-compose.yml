@@ -8,3 +8,5 @@ services:
       - .env
     ports: 
       - "7000:7000"
+    # volumes:
+    #   - ./uploads:/app/uploads

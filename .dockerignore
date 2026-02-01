@@ -1,0 +1,37 @@
+// # dependencies
+node_modules
+npm-debug.log
+yarn-error.log
+pnpm-debug.log
+
+// # env & secrets
+.env
+
+// # git & config
+.git
+.gitignore
+.github
+.vscode
+
+// # build artifacts (handled inside Docker)
+dist
+coverage
+
+// # tests & docs
+test
+documentation
+
+// # local uploads (optional – depends on your app)
+uploads
+
+// # docker files themselves
+Dockerfile
+docker-compose.yml
+.dockerignore
+
+// # OS junk
+.DS_Store
+Thumbs.db
+
+// # logs
+logs

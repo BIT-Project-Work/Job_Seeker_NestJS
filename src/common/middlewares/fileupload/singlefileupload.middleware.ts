@@ -1,11 +1,18 @@
 import { diskStorage } from 'multer';
 import { BadRequestException } from '@nestjs/common';
 import { extname } from 'path';
+import * as fs from 'fs';
 
 export const multerOptions = {
   storage: diskStorage({
     destination: (req, file, cb) => {
-      cb(null, 'uploads/');
+      const uploadPath = 'uploads';
+
+      if (!fs.existsSync(uploadPath)) {
+        fs.mkdirSync(uploadPath, { recursive: true });
+      }
+
+      cb(null, uploadPath);
     },
     filename: (req, file, cb) => {
       const uniqueSuffix = Date.now();

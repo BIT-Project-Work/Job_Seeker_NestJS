@@ -7,7 +7,7 @@ chmod +x install_amazon_docker.sh
 ./install_amazon_docker.sh
 
 
-install_amazon_docker.sh has code from 3_Docker_Initialization
+install_amazon_docker.sh has code from 3.1_Docker_Initialization
 
 [Logout with "exit" and login again to check to see if it works without sudo]
 
@@ -39,20 +39,25 @@ cd app
 nano server/.env
 Copy and paste your .env from server 
 
-11. Add the new instance deployment backend url to vite env wala and push your repo and pull inside your aws instance cmd 
+11. Add .dockerignore inside server and client
+
+12. Add the new instance deployment backend url to vite env wala and push your repo and pull inside your aws instance cmd 
 git pull
 
-12.  Build containers from the docker-compose
+13.  Build containers from the docker-compose
 docker compose build
 
-13.  Run the containers
+14.  Run the containers
 docker compose up -d
 
-14. View the running containers
+15. View the running containers
 docker compose ps
 
-15. View logs from the docker containers
+16. View logs from the docker containers
 docker compose logs
+
+
+
 
 Dockerfile: How an image is built eg: 
 FROM node:20-alpine
