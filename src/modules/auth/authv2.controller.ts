@@ -1,0 +1,353 @@
+import {
+    Controller,
+    Get,
+    Post,
+    Body,
+    HttpCode,
+    HttpStatus,
+    UseGuards,
+    Req,
+    UseInterceptors,
+    UploadedFile,
+    BadRequestException,
+} from '@nestjs/common';
+import {
+    ApiBearerAuth,
+    ApiBody,
+    ApiConsumes,
+    ApiOperation,
+    ApiResponse,
+    ApiTags,
+} from '@nestjs/swagger';
+import { AuthResponseDto } from './dto/auth-response.dto';
+import { RegisterDto } from './dto/register.dto';
+import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { LoginDto } from './dto/login.dto';
+import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { UsersService } from '../users/users.service';
+import { JwtService } from '@nestjs/jwt';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { multerOptions } from 'src/common/middlewares/fileupload/singlefileupload.middleware';
+import type { Request } from 'express';
+import { RefreshTokenGuard } from './guards/refresh-token.guard';
+import { VerifyEmailDto } from './dto/verifyEmail.dto';
+import { ModerateThrottler, StrictThrottler } from 'src/common/decorators/custom-throttler.decorator';
+import { AuthV2Service } from './authv2.service';
+
+/**
+ *! Auth V1 API controller
+ */
+@ApiTags('Auth v2')
+@Controller({
+    path: 'auth',
+    version: '2'
+})
+export class AuthV2Controller {
+    //! DI
+    constructor(
+        private readonly authV2Service: AuthV2Service,
+        private usersService: UsersService,
+        private jwtService: JwtService,
+    ) { }
+
+    /**
+     *! Register/ SignUp User
+     */
+    @Post('register')
+    @HttpCode(201)
+    @StrictThrottler()
+    @ApiOperation({
+        summary: 'Register a new user',
+        description: 'Creates a new user account',
+    })
+    @ApiResponse({
+        status: 201,
+        description: 'User successfully registered',
+        type: String,
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'Bad Request. Validation failed or user already exists',
+    })
+    @ApiResponse({
+        status: 500,
+        description: 'Internal Server Error',
+    })
+    @ApiResponse({
+        status: 429,
+        description: 'Too Many Requests',
+    })
+    async register(
+        @Body() registerDto: RegisterDto,
+    ): Promise<{ message: string }> {
+        return this.authV2Service.register(registerDto);
+    }
+
+    /**
+   *! Verify Email
+   */
+    @Post('verify_email')
+    @HttpCode(201)
+    @StrictThrottler()
+    @ApiOperation({
+        summary: 'Verifies entered email via OTP from gmail',
+    })
+    @ApiBody({
+        type: VerifyEmailDto,
+    })
+    @ApiResponse({
+        status: 201,
+        description: 'Email verified successfully',
+        type: String,
+    })
+    @ApiResponse({
+        status: 400,
+        description: 'Bad Request. Validation failed or user already exists',
+    })
+    @ApiResponse({
+        status: 500,
+        description: 'Internal Server Error',
+    })
+    @ApiResponse({
+        status: 429,
+        description: 'Too Many Requests',
+    })
+    async verifyEmail(
+        @Body() verifyEmailDto: VerifyEmailDto,
+    ): Promise<{ message: string }> {
+        return this.authV2Service.verifyEmail(verifyEmailDto);
+    }
+
+    /**
+     *! Login User
+     */
+    @Post('login')
+    @HttpCode(HttpStatus.OK)
+    @StrictThrottler()
+    @ApiOperation({
+        summary: 'Login user',
+        description: 'Authenticates a user and returns access and refresh tokens',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'User successfully logged in',
+        type: AuthResponseDto,
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. Invalid credentials or Email is unverified.',
+    })
+    @ApiResponse({
+        status: 429,
+        description: 'Too Many Requests',
+    })
+    async login(@Body() loginDto: LoginDto): Promise<AuthResponseDto> {
+        return this.authV2Service.login(loginDto);
+    }
+
+    //! Refresh access token
+    @Post('refresh')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(RefreshTokenGuard)
+    @ApiBearerAuth('JWT-refresh')
+    @StrictThrottler()
+    @ApiOperation({
+        summary: 'Refresh access token',
+        description: 'Generates a new access token using a valid refresh token'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'New access token generated successfully',
+        type: AuthResponseDto,
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. Invalid or expired refresh token',
+    })
+    @ApiResponse({
+        status: 429,
+        description: 'Too Many Requests',
+    })
+    async refresh(@GetUser('id') userId: string): Promise<AuthResponseDto> {
+        return await this.authV2Service.refreshTokens(userId);
+    }
+
+    //! Forgot Password
+    @Post('forgot_password')
+    @HttpCode(HttpStatus.OK)
+    @StrictThrottler()
+    @ApiOperation({
+        summary: 'Forgot Password',
+        description: 'Sends OTP at gmail to reset user password'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'OTP Send to your email address',
+        type: String
+    })
+    @ApiResponse({
+        status: 404,
+        description: 'User not found with this email address',
+    })
+    @ApiResponse({
+        status: 429,
+        description: 'Too Many Requests',
+    })
+    @ApiResponse({
+        status: 500,
+        description: 'Internal Server Error',
+    })
+    async forgotPassword(@Body() email: string): Promise<{ message: String }> {
+        return this.authV2Service.forgotPassword(email);
+    }
+
+    //! Verify OTP
+    @Post('verify_otp')
+    @UseGuards(JwtAuthGuard)
+    @StrictThrottler()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Verifies your OTP',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Your OTP is valid',
+        type: Boolean
+    })
+    @ApiResponse({
+        status: 429,
+        description: 'Too Many Requests',
+    })
+    async verifyOtp(@Body() email: string, otp: string) {
+        return this.authV2Service.verifyOtp(email, otp);
+    }
+
+    //! Resend Otp
+    @Post('resend_otp')
+    @UseGuards(JwtAuthGuard)
+    @StrictThrottler()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Verifies your OTP',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Your OTP is valid',
+        type: Boolean
+    })
+    @ApiResponse({
+        status: 429,
+        description: 'Too Many Requests',
+    })
+    async resendOtp(@Body() email: string) {
+        return this.authV2Service.resendOtp(email);
+    }
+
+    //! Reset Password
+    @Post('reset_password')
+    @UseGuards(JwtAuthGuard)
+    @StrictThrottler()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Resets Password',
+        description: 'Resets user password with new password'
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Password Succeessfully reset',
+        type: String
+    })
+    @ApiResponse({
+        status: 429,
+        description: 'Too Many Requests',
+    })
+    async resetPassword(@Body() email: string, password: string): Promise<{ message: String }> {
+        return this.authV2Service.resetPassword(email, password);
+    }
+
+    /**
+     *! Logout user and invalidate refresh token
+     */
+    @Post('logout')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtAuthGuard)
+    @StrictThrottler()
+    @ApiBearerAuth('JWT-auth')
+    @ApiOperation({
+        summary: 'Logout user',
+        description: 'Logs out the user and invalidates the refresh token',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'User successfully logged out',
+    })
+    @ApiResponse({
+        status: 401,
+        description: 'Unauthorized. Invalid or expired access token',
+    })
+    @ApiResponse({
+        status: 429,
+        description: 'Too Many Requests',
+    })
+    async logout(@GetUser('id') userId: string): Promise<{ message: string }> {
+        await this.authV2Service.logout(userId);
+        return {
+            message: 'Successfully logged out',
+        };
+    }
+
+    /**
+     *! Get Current User Info/ Logged in User Details
+     */
+    @Get('me')
+    @UseGuards(JwtAuthGuard)
+    @ApiBearerAuth('JWT-auth')
+    @ModerateThrottler()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Get current logged in user',
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Password Succeessfully reset',
+        type: AuthResponseDto,
+    })
+    async getMe(@Req() req: any) {
+        return await req.user;
+    }
+
+    /**
+     *! Post image
+     */
+    @Post('upload-image')
+    @HttpCode(HttpStatus.OK)
+    @ModerateThrottler()
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        description: 'File upload',
+        type: 'multipart/form-data',
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                },
+            },
+        },
+    })
+    @ApiOperation({ summary: 'Upload a file' })
+    @UseInterceptors(FileInterceptor('file', multerOptions))
+    uploadImage(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
+        // console.log(file)
+        if (!file) {
+            throw new BadRequestException('No file uploaded');
+        }
+
+        const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+
+        return {
+            imageUrl,
+        };
+    }
+}

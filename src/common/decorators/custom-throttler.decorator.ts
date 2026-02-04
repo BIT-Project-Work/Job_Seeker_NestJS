@@ -1,7 +1,7 @@
 import { Throttle } from '@nestjs/throttler';
 
 /**
- *! Strict rate for auth, payments
+ *! Strict rate for auth, payments  [3 requests in 1 sec]
  */
 export const StrictThrottler = () =>
   Throttle({
@@ -12,7 +12,7 @@ export const StrictThrottler = () =>
   });
 
 /**
- *! Moderate rate for orders
+ *! Moderate rate for orders  [5 requests in 1 sec]
  */
 export const ModerateThrottler = () =>
   Throttle({
@@ -23,7 +23,7 @@ export const ModerateThrottler = () =>
   });
 
 /**
- *! Relaxed rate for read operations in products, categories etc
+ *! Relaxed rate for read operations in products, categories etc. [20 requests in 1 sec]
  */
 export const RelaxedThrottler = () =>
   Throttle({
