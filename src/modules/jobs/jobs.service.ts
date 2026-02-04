@@ -35,7 +35,6 @@ export class JobsService {
    *! Create Job
    */
   async create(createJobDto: CreateJobDto, user: any) {
-    console.log(user._id);
     if (user.role !== 'EMPLOYER') {
       throw new ForbiddenException('Only employers can post jobs');
     }

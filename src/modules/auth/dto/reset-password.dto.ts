@@ -1,13 +1,24 @@
-import { IsString, Matches, MinLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsString, Matches, MinLength } from 'class-validator';
 
 export class ResetPasswordDto {
+  @ApiProperty({
+    example: 'johndoe@gmail.com',
+  })
+  @IsEmail()
+  email: string;
+
+  @ApiProperty({
+    example: '123456',
+    description: '6-digit numeric OTP',
+  })
   @IsString()
-  resetToken: string;
+  @Matches(/^\d{6}$/, {
+    message: 'OTP must be exactly 6 digits and contain only numbers',
+  })
+  otp: string;
 
   @IsString()
   @MinLength(6)
-  @Matches(/^(?=.*[0-9])/, {
-    message: 'Password must contain at least one number',
-  })
   newPassword: string;
 }

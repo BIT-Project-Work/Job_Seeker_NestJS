@@ -1,32 +1,20 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { Role } from 'src/common/enums/role';
+import { UserResponseDto } from 'src/modules/users/dto/user-response.dto';
 
 export class AuthResponseDto {
-  @ApiProperty({
-    example: '65c3f7a1b1a3f3c8b4d12345',
-    description: 'User ID',
-  })
-  _id: string;
 
   @ApiProperty({
-    example: 'John Doe',
+    description: 'Access token for authentication',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
   })
-  name: string;
+  accessToken: string;
 
   @ApiProperty({
-    example: 'johndoe@gmail.com',
+    description: 'Refresh token for authentication',
+    example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
   })
-  email: string;
+  refreshToken: string;
 
-  @ApiProperty({
-    example: 'avatar.png',
-    required: false,
-  })
-  avatar?: string;
-
-  @ApiProperty({
-    enum: Role,
-    example: Role.JOBSEEKER,
-  })
-  role: Role;
+  user: UserResponseDto;
 }

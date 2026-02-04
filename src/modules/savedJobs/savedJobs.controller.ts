@@ -25,13 +25,16 @@ import { SavedJobsService } from './savedJobs.service';
  *! Saved Jobs API controller
  */
 @ApiTags('Saved Jobs')
-@ApiBearerAuth()
-@Controller('saved-jobs')
+@ApiBearerAuth('JWT-auth')
+@Controller({
+  path: 'saved-jobs',
+  version: ['1', '2'],
+})
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles(Role.JOBSEEKER)
 export class SavedJobsController {
   //! DI
-  constructor(private readonly savedJobsService: SavedJobsService) {}
+  constructor(private readonly savedJobsService: SavedJobsService) { }
 
   /**
    *! Save a job for later
