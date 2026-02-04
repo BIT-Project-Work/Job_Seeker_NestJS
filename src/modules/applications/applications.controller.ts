@@ -28,12 +28,15 @@ import { Role } from 'src/common/enums/role';
  *! Job Application API controller
  */
 @ApiTags('Applications')
-@ApiBearerAuth()
-@Controller('applications')
+@ApiBearerAuth('JWT-auth')
+@Controller({
+  path: 'applications',
+  version: ['1', '2'],
+})
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ApplicationsController {
   //! DI
-  constructor(private readonly applicationsService: ApplicationsService) {}
+  constructor(private readonly applicationsService: ApplicationsService) { }
 
   /**
    *! Apply to a Job

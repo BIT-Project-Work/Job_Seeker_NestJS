@@ -25,7 +25,7 @@ export class UsersService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
-  ) {}
+  ) { }
 
   async create(createUserDto: Partial<User>) {
     return await this.userModel.create(createUserDto);

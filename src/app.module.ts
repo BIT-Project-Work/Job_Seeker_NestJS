@@ -12,11 +12,16 @@ import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { SavedJobsModule } from './modules/savedJobs/savedJobs.module';
+import { envSchema } from './common/config/env.schema';
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: `.env`,
+      validationSchema: envSchema,
+      validationOptions: {
+        abortEarly: true,
+      }
     }),
     //! DB Connection
     MongooseModule.forRootAsync({

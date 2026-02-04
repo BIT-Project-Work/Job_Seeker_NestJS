@@ -30,7 +30,7 @@ export class AuthService {
     @InjectModel(User.name) private UserModel: Model<User>,
     private jwtService: JwtService,
     private usersService: UsersService,
-  ) {}
+  ) { }
 
   //? Generate access and response tokens
   // private async generateTokens(
@@ -124,26 +124,5 @@ export class AuthService {
 
     return this.buildResponse(user);
   }
-
-  /**
-   *! Auth Service
-   */
-  //! Logout
-  async logout(userId: string): Promise<void> {}
-
-  //! Upload image
-  async uploadAvatar(avatarImage: string) {}
-
-  //! Refresh access token
-  async refreshTokens(userId: string) {}
-
-  //! Forgot password
-  async forgotPassword() {}
-
-  //! Verify Otp
-  async verifyOtp() {}
-
-  //! Reset Password
-  async resetPassword() {}
 
 }

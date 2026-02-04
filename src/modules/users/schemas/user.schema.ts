@@ -41,12 +41,27 @@ export class User {
   password: string;
 
   @ApiProperty({
-    example: 'JOBSEEKER|EMPLOYER|ADMIN',
+    example: 'JOBSEEKER|EMPLOYER',
     description: 'Provide the role of the User',
     required: true,
   })
   @Prop({ required: true, enum: Role, default: Role.JOBSEEKER })
   role: Role;
+
+  @ApiProperty({
+    description: "Refresh token",
+    required: false
+  })
+  refreshToken?: string
+
+  @Prop({ default: false })
+  isEmailVerified: boolean;
+
+  @Prop()
+  emailOtp?: string;
+
+  @Prop()
+  emailOtpExpiresAt?: Date;
 
   @ApiProperty({
     example: 'janedone.jpg',

@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -13,8 +13,15 @@ async function bootstrap() {
     prefix: '/uploads',
   });
 
-  // Project description
-  app.setGlobalPrefix('api/v1');
+  //! Backend Versioning 
+  app.setGlobalPrefix('api', {
+    exclude: ['api/docs', 'api/docs-json', 'uploads'],
+  });
+
+  app.enableVersioning({
+    type: VersioningType.URI,
+    prefix: 'v',
+  });
 
   // Set Global validation pipe
   app.useGlobalPipes(
@@ -53,17 +60,17 @@ async function bootstrap() {
       },
       'JWT-auth',
     )
-    // .addBearerAuth(
-    //   {
-    //     type: 'http',
-    //     scheme: 'bearer',
-    //     bearerFormat: 'JWT',
-    //     name: 'Refresh-JWT',
-    //     description: 'Enter refresh JWT token',
-    //     in: 'header',
-    //   },
-    //   'JWT-refresh',
-    // )
+    .addBearerAuth(
+      {
+        type: 'http',
+        scheme: 'bearer',
+        bearerFormat: 'JWT',
+        name: 'Refresh-JWT',
+        description: 'Enter refresh JWT token',
+        in: 'header',
+      },
+      'JWT-refresh',
+    )
     .addServer('http://localhost:7000', 'Development server')
     .build();
 
@@ -85,7 +92,7 @@ async function bootstrap() {
     `,
   });
 
-  app.useGlobalFilters(new GlobalExceptionFilter());
+  // app.useGlobalFilters(new GlobalExceptionFilter());
 
   await app.listen(process.env.PORT ?? 7000);
 }

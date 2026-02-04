@@ -3,9 +3,6 @@ import {
   Get,
   Post,
   Body,
-  Patch,
-  Param,
-  Delete,
   HttpCode,
   HttpStatus,
   UseGuards,
@@ -25,9 +22,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { RegisterDto } from './dto/register.dto';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { LoginDto } from './dto/login.dto';
-import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
@@ -36,24 +31,31 @@ import { multerOptions } from 'src/common/middlewares/fileupload/singlefileuploa
 import type { Request } from 'express';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
+import { DeprecationInterceptor } from 'src/common/interceptors/deprecation.interceptor';
+import { ApiDeprecated } from 'src/common/utils/apideprecated';
 
 /**
  *! Auth API controller
  */
-@ApiTags('Authentication')
-@Controller('auth')
+@UseInterceptors(DeprecationInterceptor)
+@ApiTags('Auth v1')
+@Controller({
+  path: 'auth',
+  version: '1'
+})
 export class AuthController {
   //! DI
   constructor(
     private readonly authService: AuthService,
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) {}
+  ) { }
 
   /**
    *! Register/ SignUp User
    */
   @Post('register')
+  @ApiDeprecated('Register/ SignUp (v1) — use /v2/auth/register instead')
   @HttpCode(201)
   @ApiOperation({
     summary: 'Register a new user',
@@ -86,6 +88,7 @@ export class AuthController {
    *! Login User
    */
   @Post('login')
+  @ApiDeprecated('Login (v1) — use /v2/auth/login instead')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
     summary: 'Login user',
@@ -108,134 +111,20 @@ export class AuthController {
     return this.authService.login(loginDto);
   }
 
-  //! Refresh access token
-  // @Post('refresh')
-  // @HttpCode(HttpStatus.OK)
-  // @UseGuards(RefreshTokenGuard)
-  // @ApiBearerAuth('JWT-refresh')
-  // @ApiOperation({
-  //   summary: 'Refresh access token',
-  //   description: 'Generates a new access token using a valid refresh token'
-  // })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'New access token generated successfully',
-  // })
-  // @ApiResponse({
-  //   status: 401,
-  //   description: 'Unauthorized. Invalid or expired refresh token',
-  // })
-  // @ApiResponse({
-  //   status: 429,
-  //   description: 'Too Many Requests',
-  // })
-  // async refresh(@GetUser('id') userId: string): Promise<AuthResponseDto> {
-  //   return await this.authService.refreshTokens(userId);
-  // }
-
-  //! Forgot Password
-  // @Post('forgot_password')
-  // @HttpCode(HttpStatus.OK)
-  // @ApiOperation({
-  //   summary: 'Forgot Password',
-  //   description: 'Sends OTP at gmail to reset user password'
-  // })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'OTP Send to your email address',
-  //   type: AuthResponseDto
-  // })
-  // @ApiResponse({
-  //   status: 429,
-  //   description: 'Too Many Requests',
-  // })
-  // async forgotPassword() {
-  //   return this.authService.forgotPassword();
-  // }
-
-  //! Verify OTP
-  // @Post('otp_verify')
-  // @HttpCode(HttpStatus.OK)
-  // @ApiOperation({
-  //   summary: 'Forgot Password',
-  //   description: 'Sends OTP at gmail to reset user password'
-  // })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'OTP Send to your email address',
-  //   type: AuthResponseDto
-  // })
-  // @ApiResponse({
-  //   status: 429,
-  //   description: 'Too Many Requests',
-  // })
-  // async verifyOtp(){
-  //   return this.authService.verifyOtp();
-  // }
-
-  //! Reset Password
-  // @Post('reset_password')
-  // @HttpCode(HttpStatus.OK)
-  // @ApiOperation({
-  //   summary: 'Resets Password',
-  //   description: 'Resets user password with new password'
-  // })
-  // @ApiResponse({
-  //   status: 200,
-  //   description: 'Password Succeessfully reset',
-  //   type: AuthResponseDto
-  // })
-  // @ApiResponse({
-  //   status: 429,
-  //   description: 'Too Many Requests',
-  // })
-  // async resetPassword() {
-  //   return this.authService.resetPassword();
-  // }
-
-  /**
-   *! Logout user and invalidate refresh token
-   */
-  @Post('logout')
-  @HttpCode(HttpStatus.OK)
-  @UseGuards(JwtAuthGuard)
-  @ApiBearerAuth('JWT-auth')
-  @ApiOperation({
-    summary: 'Logout user',
-    description: 'Logs out the user and invalidates the refresh token',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'User successfully logged out',
-  })
-  @ApiResponse({
-    status: 401,
-    description: 'Unauthorized. Invalid or expired access token',
-  })
-  @ApiResponse({
-    status: 429,
-    description: 'Too Many Requests',
-  })
-  async logout(@GetUser('id') userId: string): Promise<{ message: string }> {
-    await this.authService.logout(userId);
-    return {
-      message: 'Successfully logged out',
-    };
-  }
-
   /**
    *! Get Current User Info/ Logged in User Details
    */
-  @UseGuards(JwtAuthGuard)
   @Get('me')
   @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: 'Get current logged in user',
   })
   @ApiResponse({
     status: 200,
-    description: 'Password Succeessfully reset',
-    type: AuthResponseDto,
+    description: 'Get logged user info',
+    // type: AuthResponseDto,
   })
   async getMe(@Req() req: any) {
     return await req.user;
@@ -263,7 +152,6 @@ export class AuthController {
   @ApiOperation({ summary: 'Upload a file' })
   @UseInterceptors(FileInterceptor('file', multerOptions))
   uploadImage(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
-    // console.log(file)
     if (!file) {
       throw new BadRequestException('No file uploaded');
     }

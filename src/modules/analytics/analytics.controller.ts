@@ -8,22 +8,29 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
 import { EmployerAnalyticsResponseDto } from './dto/analytics-response.dto';
+import { Roles } from 'src/common/decorators/roles.decorator';
+import { RolesGuard } from 'src/common/guards/roles.guard';
+import { Role } from 'src/common/enums/role';
 
 /**
  *! Analytics API controller
  */
 @ApiTags('Analytics')
-@ApiBearerAuth()
-@Controller('analytics')
+@ApiBearerAuth('JWT-auth')
+@Controller({
+  path: 'analytics',
+  version: ['1', '2'],
+})
 export class AnalyticsController {
   //! DI
-  constructor(private readonly analyticsService: AnalyticsService) {}
+  constructor(private readonly analyticsService: AnalyticsService) { }
 
   /**
    *! Get Employer Analytics
    */
   @Get('overview')
-  @UseGuards(JwtAuthGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
   @ApiOperation({
     summary: 'Employee Analytics Overview',
   })
