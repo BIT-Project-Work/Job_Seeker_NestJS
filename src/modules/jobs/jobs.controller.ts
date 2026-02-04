@@ -35,17 +35,20 @@ import { GetUser } from 'src/common/decorators/get-user.decorator';
 import { JobQueryDto } from './dto/job-query.dto';
 
 /**
- * Jobs API controller
+ *! Jobs API controller
  */
 @ApiTags('Jobs')
-@ApiBearerAuth()
-@Controller('jobs')
+// @ApiBearerAuth('JWT-auth')
+@Controller({
+  path: 'jobs',
+  version: ['1', '2'],
+})
 export class JobsController {
   //! DI
-  constructor(private readonly jobsService: JobsService) {}
+  constructor(private readonly jobsService: JobsService) { }
 
   /**
-   * Create a new job
+   * !Create a new job
    *
    * @param createJobDto Job creation payload
    * @param user Authenticated employer
@@ -53,6 +56,7 @@ export class JobsController {
    */
   @Post()
   @ModerateThrottler()
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
   @ApiOperation({
@@ -76,7 +80,7 @@ export class JobsController {
   }
 
   /**
-   * Get All Jobs (Filtered/Paginated)
+   *! Get All Jobs (Filtered/Paginated)
    */
   @Get()
   @RelaxedThrottler()
@@ -100,9 +104,10 @@ export class JobsController {
    */
 
   /**
-   * Get Jobs for Employers
+   *! Get Jobs for Employers
    */
   @Get('get-jobs-employer')
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
   @ApiOperation({
@@ -121,7 +126,40 @@ export class JobsController {
   }
 
   /**
-   * Get Single Job
+ *! Toggle Close Job
+ */
+  @Patch(':id/toggle-close')
+  @ApiBearerAuth('JWT-auth')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(Role.EMPLOYER)
+  @ApiOperation({
+    summary: 'Close to a job',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Job closed successfully',
+  })
+  @ApiResponse({
+    status: 403,
+    description: 'Only Employer can close a job',
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Job doesnot exist',
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal Server Error',
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'Too many requests - rate limit exceeded',
+  })
+  toggleClose(@Param('id') id: string, @GetUser() user: any) {
+    return this.jobsService.toggleClose(id, user);
+  }
+
+  /**
+   *! Get Single Job
    */
   @Get(':id')
   @ApiOperation({
@@ -139,9 +177,10 @@ export class JobsController {
   }
 
   /**
-   * Update Job
+   *! Update Job
    */
   @Patch(':id')
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
   @ApiOperation({
@@ -180,9 +219,10 @@ export class JobsController {
   }
 
   /**
-   * Delete Job
+   *! Delete Job
    */
   @Delete(':id')
+  @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(Role.EMPLOYER)
   @ApiOperation({
@@ -209,37 +249,5 @@ export class JobsController {
   })
   remove(@Param('id') id: string, @GetUser() user: any) {
     return this.jobsService.remove(id, user);
-  }
-
-  /**
-   * Toggle Close Job
-   */
-  @Patch(':id/toggle-close')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles(Role.EMPLOYER)
-  @ApiOperation({
-    summary: 'Close to a job',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Job closed successfully',
-  })
-  @ApiResponse({
-    status: 403,
-    description: 'Only Employer can close a job',
-  })
-  @ApiResponse({
-    status: 404,
-    description: 'Job doesnot exist',
-  })
-  @ApiResponse({
-    status: 500,
-    description: 'Internal Server Error',
-  })
-  @ApiTooManyRequestsResponse({
-    description: 'Too many requests - rate limit exceeded',
-  })
-  toggleClose(@Param('id') id: string, @GetUser() user: any) {
-    return this.jobsService.toggleClose(id, user);
   }
 }

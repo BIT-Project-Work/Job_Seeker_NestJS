@@ -32,11 +32,14 @@ import { Role } from 'src/common/enums/role';
  *! Users API controller
  */
 @ApiTags('Users')
-@ApiBearerAuth()
-@Controller('user')
+@ApiBearerAuth('JWT-auth')
+@Controller({
+  path: 'user',
+  version: ['1', '2'],
+})
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(private readonly usersService: UsersService) { }
 
   // @Post()
   // create(@Body() createUserDto: CreateUserDto) {
@@ -47,8 +50,8 @@ export class UsersController {
    *! Get all users [ADMIN]
    */
   @Get()
-  @UseGuards(RolesGuard)
-  @Roles(Role.ADMIN)
+  @UseGuards(JwtAuthGuard,RolesGuard)
+  // @Roles(Role.ADMIN)
   @ApiOperation({
     summary: 'View all the users',
   })
