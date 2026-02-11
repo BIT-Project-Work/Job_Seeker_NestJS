@@ -21,7 +21,9 @@ import { generateOtp, hashOtp, otpExpiry } from 'src/common/utils/otp.util';
 import { Otp } from './schemas/otp.schema';
 import { MailService } from '../mail/mail.service';
 import { VerifyEmailDto } from './dto/verifyEmail.dto';
+import ms from 'ms'
 
+type OtpType = 'VERIFY_EMAIL' | 'FORGOT_PASSWORD';
 /**
  *! Auth Service
  */
@@ -105,7 +107,7 @@ export class AuthV2Service {
         const user = await this.UserModel.findById(payload.sub).select('-password');
 
         if (!user || !user.refreshToken)
-            throw new UnauthorizedException();
+            throw new UnauthorizedException("Refresh Token doesn't exist");
 
         const matches = await bcrypt.compare(refreshToken, user.refreshToken);
 
@@ -164,7 +166,7 @@ export class AuthV2Service {
                 otp: hashedOtp,
                 expiresAt: otpExpiry(this.configService.get('OTP_EXPIRY_TIME')), // e.g., 10 minutes
                 userId: user._id,
-                type: 'VERIFY_EMAIL', // important to differentiate from forgot password
+                type: 'VERIFY_EMAIL',
             });
 
             const companyLogo = 'https://i.imgur.com/3KcynwC.png';
@@ -196,7 +198,7 @@ export class AuthV2Service {
 
             await this.mailService.sendMail(user.email, subject, message, message)
 
-            return { message: `OTP has been sent to your email: ${user.email}` }
+            return { message: `Verify Otp sent to your email: ${user.email}` }
 
 
         } catch (error) {
@@ -230,7 +232,7 @@ export class AuthV2Service {
         });
 
         if (!otpRecord) {
-            throw new BadRequestException('OTP not found or expired');
+            throw new BadRequestException('OTP not found');
         }
 
         if (otpRecord.expiresAt < new Date()) {
@@ -240,8 +242,9 @@ export class AuthV2Service {
         }
 
         // Compare OTP
-        const hashedOtp = await bcrypt.hash(otp, 10);
-        if (hashedOtp !== otpRecord.otp) {
+        const isOtpValid = await bcrypt.compare(otp, otpRecord.otp);
+
+        if (!isOtpValid) {
             throw new BadRequestException('Invalid OTP');
         }
 
@@ -260,8 +263,11 @@ export class AuthV2Service {
             false, // rememberMe
         );
 
+        const ttl = Number(ms(this.configService.getOrThrow('REFRESH_TOKEN_TIME')));
+
         // Save refresh token in DB
-        const refreshTokenExpiresAt = new Date(Date.now() + 1000 * 60 * 60 * 24); // 1 day
+        const refreshTokenExpiresAt = new Date(Date.now() + ttl);
+
         await this.updateRefreshToken(user.id, tokens.refreshToken, refreshTokenExpiresAt);
 
         return { message: 'Email verified successfully. You can now login.' };
@@ -274,8 +280,8 @@ export class AuthV2Service {
         const { email, password, rememberMe } = loginDto;
 
         const refreshExpiresAt = rememberMe
-            ? new Date(Date.now() + 1000 * 60 * 60 * 24 * 7)
-            : new Date(Date.now() + 1000 * 60 * 60 * 24);
+            ? new Date(Date.now() + Number(ms(this.configService.getOrThrow('REFRESH_TOKEN_REMEMBER_TIME'))))
+            : new Date(Date.now() + Number(ms(this.configService.getOrThrow('REFRESH_TOKEN_TIME'))));
 
         const user = await this.usersService.findByEmail(email);
 
@@ -386,33 +392,39 @@ export class AuthV2Service {
     /**
   *! Resend Otp
   */
-    async resendOtp(email: string): Promise<{ message: string }> {
+    async resendOtp(
+        email: string,
+        type: 'VERIFY_EMAIL' | 'FORGOT_PASSWORD',
+    ): Promise<{ message: string }> {
         const user = await this.UserModel.findOne({ email });
 
         if (!user) {
             throw new BadRequestException('Invalid email');
         }
 
-        // if (user.isEmailVerified) {
-        //     throw new BadRequestException('Email already verified');
-        // }
+        if (type === 'VERIFY_EMAIL' && user.isEmailVerified) {
+            throw new BadRequestException('Email already verified');
+        }
 
         const otp = generateOtp();
         const hashedOtp = await bcrypt.hash(otp, 10);
 
         // Invalidate previous verification OTPs
-        await this.otpModel.deleteMany({ userId: user._id, type: 'VERIFY_EMAIL' });
+        await this.otpModel.deleteMany({ userId: user._id, type });
 
         await this.otpModel.create({
             otp: hashedOtp,
-            expiresAt: new Date(Date.now() + 10 * 60 * 1000),
+            expiresAt: otpExpiry(this.configService.get('OTP_EXPIRY_TIME')), // e.g., 10 minutes
             userId: user._id,
-            type: 'VERIFY_EMAIL',
+            type
         });
 
         const companyLogo = 'https://i.imgur.com/3KcynwC.png';
 
-        const subject = `JobSeeker Reset Password OTP`;
+        const subject =
+            type === 'VERIFY_EMAIL'
+                ? 'Verify your email'
+                : 'Reset password OTP';
 
         const message = `
         <div style="font-family: Arial, Helvetica, sans-serif; color: #333; line-height: 1.6; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
@@ -472,6 +484,5 @@ export class AuthV2Service {
             { $set: { refreshToken: null } },
         );
     }
-
 
 }

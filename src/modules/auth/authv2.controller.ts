@@ -31,7 +31,6 @@ import { JwtService } from '@nestjs/jwt';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { multerOptions } from 'src/common/middlewares/fileupload/singlefileupload.middleware';
 import type { Request, Response } from 'express';
-import { RefreshTokenGuard } from './guards/refresh-token.guard';
 import { VerifyEmailDto } from './dto/verifyEmail.dto';
 import { ModerateThrottler, StrictThrottler } from 'src/common/decorators/custom-throttler.decorator';
 import { AuthV2Service } from './authv2.service';
@@ -40,6 +39,7 @@ import { ResendOtpDto } from './dto/resendOtp.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { VerifyOtpDto } from './dto/verifyOtp.dto';
+import ms from 'ms';
 
 /**
  *! Auth V1 API controller
@@ -156,14 +156,16 @@ export class AuthV2Controller {
     ): Promise<AuthResponseDto> {
         const { accessToken, refreshToken, user } = await this.authV2Service.login(loginDto);
 
+        const ttl = loginDto.rememberMe
+            ? Number(ms(this.configService.getOrThrow('REFRESH_TOKEN_REMEMBER_TIME')))
+            : Number(ms(this.configService.getOrThrow('REFRESH_TOKEN_TIME')));
+
         res.cookie('refreshToken', refreshToken, {
             httpOnly: true,
             secure: this.configService.get('NODE_ENV') === 'production',
-            sameSite: 'none',   // production
-            path: '/api/v2/auth/refresh',
-            maxAge: loginDto.rememberMe
-                ? 1000 * 60 * 60 * 24 * 7   // 7 days
-                : 1000 * 60 * 60 * 24,     // 1 day
+            sameSite: this.configService.get('NODE_ENV') === 'production' ? 'none' : 'lax',
+            path: '/',
+            maxAge: ttl
         });
 
         return {
@@ -175,8 +177,8 @@ export class AuthV2Controller {
     //! Refresh access token
     @Post('refresh')
     @HttpCode(HttpStatus.OK)
-    @UseGuards(JwtAuthGuard)
-    // @ApiBearerAuth('JWT-refresh')
+    // @UseGuards(JwtAuthGuard)
+    // @ApiBearerAuth('JWT-auth')
     @StrictThrottler()
     @ApiOperation({
         summary: 'Refresh access token',
@@ -210,8 +212,8 @@ export class AuthV2Controller {
         res.cookie('refreshToken', newRefreshToken, {
             httpOnly: true,
             secure: this.configService.get('NODE_ENV') === 'production',
-            sameSite: 'none',   // production
-            path: '/api/v2/auth/refresh',
+            sameSite: this.configService.get('NODE_ENV') === 'production' ? 'none' : 'lax',
+            path: '/',
             maxAge: remainingMs
         });
 
@@ -276,12 +278,35 @@ export class AuthV2Controller {
         return this.authV2Service.verifyOtp(dto.email, dto.otp, dto.type);
     }
 
-    //! Resend Otp
-    @Post('resend_otp')
+    //! Resend Email Verification OTP
+    @Post('resend_verification_otp')
     @StrictThrottler()
     @HttpCode(HttpStatus.OK)
     @ApiOperation({
-        summary: 'Verifies your OTP',
+        summary: 'Resends Otp to your email address',
+    })
+    @ApiBody({
+        type: ResendOtpDto,
+    })
+    @ApiResponse({
+        status: 200,
+        description: 'Otp send to your email',
+        type: Boolean
+    })
+    @ApiResponse({
+        status: 429,
+        description: 'Too Many Requests',
+    })
+    async resendVerifyOtp(@Body() dto: ResendOtpDto) {
+        return this.authV2Service.resendOtp(dto.email, 'VERIFY_EMAIL');
+    }
+
+    //! Resend Email Verification OTP
+    @Post('resend_forgot_password_otp')
+    @StrictThrottler()
+    @HttpCode(HttpStatus.OK)
+    @ApiOperation({
+        summary: 'Verifies your Email',
     })
     @ApiBody({
         type: ResendOtpDto,
@@ -295,8 +320,8 @@ export class AuthV2Controller {
         status: 429,
         description: 'Too Many Requests',
     })
-    async resendOtp(@Body() dto: ResendOtpDto) {
-        return this.authV2Service.resendOtp(dto.email);
+    async resendForgotOtp(@Body() dto: ResendOtpDto) {
+        return this.authV2Service.resendOtp(dto.email, 'FORGOT_PASSWORD');
     }
 
     //! Reset Password
@@ -377,7 +402,7 @@ export class AuthV2Controller {
     /**
      *! Post image
      */
-    @Post('upload-image')
+    @Post('upload_image')
     @HttpCode(HttpStatus.OK)
     @ModerateThrottler()
     @ApiConsumes('multipart/form-data')

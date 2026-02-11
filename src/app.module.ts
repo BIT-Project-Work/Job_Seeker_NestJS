@@ -3,7 +3,7 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { LoggerMiddleware } from './common/middlewares/logger/logger.middleware';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './modules/auth/auth.module';
 import { UsersModule } from './modules/users/users.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
@@ -13,6 +13,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { SavedJobsModule } from './modules/savedJobs/savedJobs.module';
 import { envSchema } from './common/config/env.schema';
+import { APP_GUARD } from '@nestjs/core';
+import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -41,8 +43,8 @@ import { envSchema } from './common/config/env.schema';
 
     ThrottlerModule.forRoot([
       {
-        ttl: 60, // Time to live: 60 seconds
-        limit: 10, // Limit: 10 requests per 60 seconds
+        ttl: 60_000, // 1 minute
+        limit: 100, // global fallback
       },
     ]),
     AuthModule,
@@ -53,7 +55,13 @@ import { envSchema } from './common/config/env.schema';
     SavedJobsModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: CustomThrottlerGuard
+    }
+  ],
 })
 export class AppModule implements NestModule {
   //! Logger Middleware
