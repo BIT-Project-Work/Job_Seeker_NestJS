@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -178,9 +179,9 @@ export class UsersController {
   })
   async removeResume(
     @GetUser('_id') userId: string,
-    @Body() deleteResumeDto: DeleteResumeDto,
+    @Body() dto: DeleteResumeDto,
   ) {
-    return this.usersService.deleteResume(userId, deleteResumeDto);
+    return this.usersService.deleteResume(userId, dto);
   }
 
   /**

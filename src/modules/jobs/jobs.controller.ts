@@ -172,7 +172,11 @@ export class JobsController {
   @ApiTooManyRequestsResponse({
     description: 'Too many requests - rate limit exceeded',
   })
-  findOne(@Param('id') id: string, @Query('userId') userId?: string) {
+  findOne(
+    @Param('id') id: string, 
+    @Query('userId') userId?: string,
+    // @GetUser() userId?: any,
+  ) {
     return this.jobsService.findOne(id, userId);
   }
 
