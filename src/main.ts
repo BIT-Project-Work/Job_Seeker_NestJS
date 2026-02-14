@@ -5,9 +5,17 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import cookieParser from 'cookie-parser';
+import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
+import { PrometheusLoggerMiddleware } from './common/middlewares/prometheus_logger/prometheus_logger.middleware';
+import { PrometheusService } from './common/prometheus/prometheus.service';
+
+
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.use(cookieParser());
 
   app.useStaticAssets(join(__dirname, '..', 'uploads'), {
     prefix: '/uploads',
@@ -60,17 +68,17 @@ async function bootstrap() {
       },
       'JWT-auth',
     )
-    .addBearerAuth(
-      {
-        type: 'http',
-        scheme: 'bearer',
-        bearerFormat: 'JWT',
-        name: 'Refresh-JWT',
-        description: 'Enter refresh JWT token',
-        in: 'header',
-      },
-      'JWT-refresh',
-    )
+    // .addBearerAuth(
+    //   {
+    //     type: 'http',
+    //     scheme: 'bearer',
+    //     bearerFormat: 'JWT',
+    //     name: 'Refresh-JWT',
+    //     description: 'Enter refresh JWT token',
+    //     in: 'header',
+    //   },
+    //   'JWT-refresh',
+    // )
     .addServer('http://localhost:7000', 'Development server')
     .build();
 
@@ -93,6 +101,14 @@ async function bootstrap() {
   });
 
   // app.useGlobalFilters(new GlobalExceptionFilter());
+  app.useGlobalInterceptors(app.get(MetricsInterceptor));
+
+  const prometheusService = app.get(PrometheusService);
+
+  app.use((req, res, next) => {
+    const middleware = new PrometheusLoggerMiddleware(prometheusService);
+    middleware.use(req, res, next);
+  });
 
   await app.listen(process.env.PORT ?? 7000);
 }
