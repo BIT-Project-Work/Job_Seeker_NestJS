@@ -7,6 +7,8 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
 import cookieParser from 'cookie-parser';
 import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
+import { PrometheusLoggerMiddleware } from './common/middlewares/prometheus_logger/prometheus_logger.middleware';
+import { PrometheusService } from './common/prometheus/prometheus.service';
 
 
 
@@ -100,6 +102,13 @@ async function bootstrap() {
 
   // app.useGlobalFilters(new GlobalExceptionFilter());
   app.useGlobalInterceptors(app.get(MetricsInterceptor));
+
+  const prometheusService = app.get(PrometheusService);
+
+  app.use((req, res, next) => {
+    const middleware = new PrometheusLoggerMiddleware(prometheusService);
+    middleware.use(req, res, next);
+  });
 
   await app.listen(process.env.PORT ?? 7000);
 }

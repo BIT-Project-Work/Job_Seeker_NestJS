@@ -7,6 +7,7 @@ export class PrometheusService {
 
     public readonly httpDuration: Histogram<string>;
     public readonly httpRequests: Counter<string>;
+    public readonly httpResponseSize: Histogram<string>;
 
     constructor() {
         this.register.setDefaultLabels({ app: 'nestjs-prometheus' });
@@ -33,10 +34,23 @@ export class PrometheusService {
             registers: [this.register],
         });
 
-        
+        //! Response sizes
+        this.httpResponseSize = new Histogram({
+            name: 'http_response_size_bytes',
+            help: 'HTTP response size in bytes',
+            labelNames: ['method', 'route', 'status'],
+            buckets: [100, 500, 1000, 5000, 10000, 50000, 100000],
+            registers: [this.register],
+        });
     }
 
-    getMetrics(): Promise<string> {
-        return this.register.metrics();
+    async getMetrics(externalRegisters: Registry[] = []): Promise<string> {
+        let metrics = await this.register.metrics();
+
+        for (const reg of externalRegisters) {
+            metrics += '\n' + (await reg.metrics());
+        }
+
+        return metrics;
     }
 }
