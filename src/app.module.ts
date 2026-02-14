@@ -17,6 +17,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 import { PrometheusModule } from './common/prometheus/prometheus.module';
 import { WinstonLoggerMiddleware } from './common/middlewares/winston_logger/winston.middleware';
+import { TestModule } from './modules/test/test.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -61,6 +62,8 @@ import { WinstonLoggerMiddleware } from './common/middlewares/winston_logger/win
 
     //! Prometheus Metrics
     PrometheusModule,
+
+    TestModule,
   ],
   controllers: [
     AppController,
