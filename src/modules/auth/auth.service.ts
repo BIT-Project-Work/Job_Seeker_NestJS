@@ -32,21 +32,6 @@ export class AuthService {
     private usersService: UsersService,
   ) { }
 
-  //? Generate access and response tokens
-  // private async generateTokens(
-  //   userId: string,
-  //   email: string
-  // ): Promise<{ accessToken: string, refreshToken: string }> {
-  //   const payload = { sub: userId, email };
-  //   const refreshId = randomBytes(16).toString('hex');
-
-  //   const [accessToken, refreshToken] = await Promise.all([
-  //     this.jwtService.signAsync(payload, { expiresIn: '15m' }),
-  //     this.jwtService.signAsync({ ...payload, rid: refreshId }, { expiresIn: '7d' })
-  //   ]);
-  //   return { accessToken, refreshToken };
-  // }
-
   private generateToken = (userId: string): string => {
     return this.jwtService.sign(
       {}, // payload
@@ -58,8 +43,6 @@ export class AuthService {
     );
   };
 
-  //? Update refresh token in database during logins etc
-  // async updateRefreshToken(userId: string, refreshToken: string) { }
 
   //? Response for registration
   private buildResponse(user: any) {

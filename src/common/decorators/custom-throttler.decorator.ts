@@ -1,34 +1,34 @@
 import { Throttle } from '@nestjs/throttler';
 
 /**
- *! Strict rate for auth, payments  [3 requests in 1 sec]
+ *! Strict rate for auth, payments  [5 requests per minute]
  */
 export const StrictThrottler = () =>
   Throttle({
     default: {
-      ttl: 1000,
-      limit: 3,
-    },
-  });
-
-/**
- *! Moderate rate for orders  [5 requests in 1 sec]
- */
-export const ModerateThrottler = () =>
-  Throttle({
-    default: {
-      ttl: 1000,
+      ttl: 60_000, // 1 minute
       limit: 5,
     },
   });
 
 /**
- *! Relaxed rate for read operations in products, categories etc. [20 requests in 1 sec]
+ *! Moderate rate for orders  [30 requests per minute]
+ */
+export const ModerateThrottler = () =>
+  Throttle({
+    default: {
+      ttl: 60_000, // 1 minute
+      limit: 30,
+    },
+  });
+
+/**
+ *! Relaxed rate for read operations in products, categories etc. [300 requests per minute]
  */
 export const RelaxedThrottler = () =>
   Throttle({
     default: {
-      ttl: 1000,
-      limit: 20,
+      ttl: 60_000, // 1 minute
+      limit: 300,
     },
   });

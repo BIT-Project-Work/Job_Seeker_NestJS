@@ -59,6 +59,7 @@ export class UsersService {
     userId: string,
     dto: UpdateProfileDto,
   ): Promise<ProfileResponseDto> {
+
     const user = await this.userModel.findById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -93,6 +94,7 @@ export class UsersService {
    *!  Delete Resume
    */
   async deleteResume(userId: string, dto: DeleteResumeDto) {
+
     const user = await this.userModel.findById(userId);
 
     if (!user) {

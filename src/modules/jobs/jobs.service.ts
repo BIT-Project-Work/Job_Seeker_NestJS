@@ -29,7 +29,7 @@ export class JobsService {
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
     @InjectModel(Application.name) private appModel: Model<ApplicationDocument>,
     @InjectModel(SavedJob.name) private savedJobModel: Model<SavedJobDocument>,
-  ) {}
+  ) { }
 
   /**
    *! Create Job
@@ -66,9 +66,17 @@ export class JobsService {
       if (maxSalary) query.$and.push({ salaryMin: { $lte: maxSalary } });
     }
 
+    // const jobs = await this.jobModel
+    //   .find(query)
+    //   .populate('company', 'name companyName companyLogo')
+    //   .lean();
+
     const jobs = await this.jobModel
       .find(query)
-      .populate('company', 'name companyName companyLogo')
+      .populate({
+        path: 'company',
+        select: 'name companyName companyLogo',
+      })
       .lean();
 
     // let savedIds: string[] = [];
@@ -91,14 +99,16 @@ export class JobsService {
         .select('job status');
 
       apps.forEach((app) => {
-        // appliedMap[String(app.job)] = app.status;
-        appliedMap[app.job.toString()] = app.status;
+        appliedMap[String(app.job)] = app.status;
+        // appliedMap[app.job.toString()] = app.status;
       });
     }
 
+
+
     return jobs.map((job) => {
-      // const id = String(job._id);
-      const id = job._id.toString();
+      const id = String(job._id);
+      // const id = job._id.toString();
       return {
         // ...job.toObject(),
         ...job,
@@ -116,6 +126,10 @@ export class JobsService {
   /**
    *! Get All Jobs Without Queries
    */
+  async findJobsWithoutFilters() {
+    return this.jobModel.find({ isClosed: false });
+  }
+
 
   /**
    *! Employer Jobs
@@ -168,6 +182,7 @@ export class JobsService {
    *! Get Job by id
    */
   async findOne(id: string, userId?: string) {
+
     const job = await this.jobModel
       .findById(id)
       .populate('company', 'name companyName companyLogo');
@@ -176,11 +191,12 @@ export class JobsService {
 
     let applicationStatus: ApplicationStatus | null = null;
 
-    if (userId) {
+    if (userId && Types.ObjectId.isValid(userId)) {
       const app = await this.appModel.findOne({
         job: job._id,
-        applicant: userId,
+        applicant: new Types.ObjectId(userId),
       });
+
       applicationStatus = app?.status ?? null;
     }
 

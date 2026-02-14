@@ -11,6 +11,9 @@ export class Otp {
 
     @Prop({ type: Types.ObjectId, ref: 'User', required: true })
     userId: Types.ObjectId;
+
+    @Prop({ type: String, enum: ['VERIFY_EMAIL', 'FORGOT_PASSWORD'], required: true })
+    type: string;
 }
 
 export const OtpSchema = SchemaFactory.createForClass(Otp);

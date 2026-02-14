@@ -51,7 +51,7 @@ export class RegisterDto {
   avatar?: string;
 
   @ApiProperty({
-    example: 'JOBSEEKER|EMPLOYER|ADMIN',
+    example: 'JOBSEEKER|EMPLOYER',
     description: 'Provide the role of the User',
     required: true,
   })

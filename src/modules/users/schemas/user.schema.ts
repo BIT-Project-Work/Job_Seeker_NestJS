@@ -52,16 +52,20 @@ export class User {
     description: "Refresh token",
     required: false
   })
+  @Prop()
   refreshToken?: string
+
+  @Prop()
+  refreshTokenExpiresAt: Date;
 
   @Prop({ default: false })
   isEmailVerified: boolean;
 
-  @Prop()
-  emailOtp?: string;
+  // @Prop()
+  // emailOtp?: string;
 
-  @Prop()
-  emailOtpExpiresAt?: Date;
+  // @Prop()
+  // emailOtpExpiresAt?: Date;
 
   @ApiProperty({
     example: 'janedone.jpg',
@@ -102,16 +106,3 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
-
-// UserSchema.pre<UserDocument>('save', async function () {
-//     if (!this.isModified('password')) return;
-
-//     const salt = await bcrypt.genSalt(10);
-//     this.password = await bcrypt.hash(this.password, salt);
-// });
-
-// UserSchema.methods.matchPassword = async function (
-//     enteredPassword: string,
-// ): Promise<boolean> {
-//     return bcrypt.compare(enteredPassword, this.password);
-// };
