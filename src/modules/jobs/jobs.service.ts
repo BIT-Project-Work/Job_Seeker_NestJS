@@ -126,6 +126,10 @@ export class JobsService {
   /**
    *! Get All Jobs Without Queries
    */
+  async findJobsWithoutFilters() {
+    return this.jobModel.find({ isClosed: false });
+  }
+
 
   /**
    *! Employer Jobs

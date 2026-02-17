@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { LoggerMiddleware } from './common/middlewares/logger/logger.middleware';
+import { LoggerMiddleware } from './common/middlewares/morgan_logger/logger.middleware';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { AuthModule } from './modules/auth/auth.module';
@@ -15,6 +15,9 @@ import { SavedJobsModule } from './modules/savedJobs/savedJobs.module';
 import { envSchema } from './common/config/env.schema';
 import { APP_GUARD } from '@nestjs/core';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
+import { PrometheusModule } from './common/prometheus/prometheus.module';
+import { WinstonLoggerMiddleware } from './common/middlewares/winston_logger/winston.middleware';
+import { TestModule } from './modules/test/test.module';
 @Module({
   imports: [
     ConfigModule.forRoot({
@@ -41,20 +44,30 @@ import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
       }),
     }),
 
+    //! Rate Limiting 
     ThrottlerModule.forRoot([
       {
         ttl: 60_000, // 1 minute
         limit: 100, // global fallback
       },
     ]),
+
+    //! Other packages
     AuthModule,
     UsersModule,
     ApplicationsModule,
     JobsModule,
     AnalyticsModule,
     SavedJobsModule,
+
+    //! Prometheus Metrics
+    PrometheusModule,
+
+    TestModule,
   ],
-  controllers: [AppController],
+  controllers: [
+    AppController,
+  ],
   providers: [
     AppService,
     {
@@ -67,5 +80,6 @@ export class AppModule implements NestModule {
   //! Logger Middleware
   configure(consumer: MiddlewareConsumer) {
     consumer.apply(LoggerMiddleware).forRoutes('*');
+    // consumer.apply(WinstonLoggerMiddleware).forRoutes('*');
   }
 }

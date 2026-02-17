@@ -100,8 +100,23 @@ export class JobsController {
   }
 
   /**
-   * Get All Jobs no pagination
+   *! Get All Jobs Without Filters (For Home Page)
    */
+  @Get('without-filters')
+  @RelaxedThrottler()
+  @ApiOperation({
+    summary: 'Get all jobs without any filters',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'All available jobs without any filters',
+  })
+  @ApiTooManyRequestsResponse({
+    description: 'Too many requests - rate limit exceeded',
+  })
+  findJobsWithoutFilters() {
+    return this.jobsService.findJobsWithoutFilters();
+  }
 
   /**
    *! Get Jobs for Employers
@@ -173,7 +188,7 @@ export class JobsController {
     description: 'Too many requests - rate limit exceeded',
   })
   findOne(
-    @Param('id') id: string, 
+    @Param('id') id: string,
     @Query('userId') userId?: string,
     // @GetUser() userId?: any,
   ) {
