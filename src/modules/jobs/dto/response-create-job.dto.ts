@@ -1,17 +1,17 @@
-import { JobType } from 'src/common/enums/jobType';
+import { JobType } from '../../../common/enums/jobType';
 
 export class ResponseCreateJobDto {
-  _id: string;
-  title: string;
-  description: string;
-  requirements: string;
+  _id!: string;
+  title!: string;
+  description!: string;
+  requirements!: string;
   location?: string;
   category?: string;
-  type: JobType;
-  company: string;
+  type!: JobType;
+  company!: string;
   salaryMin?: number;
   salaryMax?: number;
   isClosed?: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt!: Date;
+  updatedAt!: Date;
 }

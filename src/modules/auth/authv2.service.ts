@@ -17,7 +17,7 @@ import { Model } from 'mongoose';
 import * as bcrypt from 'bcrypt';
 import { LoginDto } from './dto/login.dto';
 import { ConfigService } from '@nestjs/config';
-import { generateOtp, hashOtp, otpExpiry } from 'src/common/utils/otp.util';
+import { generateOtp, hashOtp, otpExpiry } from '../../common/utils/otp.util';
 import { Otp } from './schemas/otp.schema';
 import { MailService } from '../mail/mail.service';
 import { VerifyEmailDto } from './dto/verifyEmail.dto';

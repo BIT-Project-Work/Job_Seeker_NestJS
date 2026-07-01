@@ -12,7 +12,7 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import {
   ApiBearerAuth,
@@ -22,12 +22,12 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 import { ProfileResponseDto } from './dto/profile-response.dto';
-import { GetUser } from 'src/common/decorators/get-user.decorator';
+import { GetUser } from '../../common/decorators/get-user.decorator';
 import { DeleteResumeDto } from './dto/delete-resume.dto';
 import { PublicProfileResponseDto } from './dto/public-profile-response.dto';
-import { RolesGuard } from 'src/common/guards/roles.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { Role } from 'src/common/enums/role';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { Role } from '../../common/enums/role';
 
 /**
  *! Users API controller

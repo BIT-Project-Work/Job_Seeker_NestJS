@@ -8,5 +8,5 @@ export class DeleteResumeDto {
   })
   @IsString()
   @IsNotEmpty()
-  resumeUrl: string;
+  resumeUrl!: string;
 }

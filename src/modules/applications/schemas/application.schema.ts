@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { ApplicationStatus } from 'src/common/enums/applicationStatus';
-import { Job } from 'src/modules/jobs/schemas/job.schema';
-import { User } from 'src/modules/users/schemas/user.schema';
+import { ApplicationStatus } from '../../../common/enums/applicationStatus';
+import { Job } from '../../../modules/jobs/schemas/job.schema';
+import { User } from '../../../modules/users/schemas/user.schema';
 
 export type ApplicationDocument = Document & Application;
 
@@ -11,11 +11,11 @@ export type ApplicationDocument = Document & Application;
 export class Application {
   @ApiProperty({ type: String, description: 'Job ID' })
   @Prop({ type: Types.ObjectId, ref: Job.name, required: true })
-  job: Types.ObjectId;
+  job!: Types.ObjectId;
 
   @ApiProperty({ type: String, description: 'Applicant User ID' })
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-  applicant: Types.ObjectId;
+  applicant!: Types.ObjectId;
 
   @ApiProperty({
     example: 'uploads/resume.pdf',
@@ -27,13 +27,13 @@ export class Application {
 
   @ApiProperty({ enum: ApplicationStatus, default: ApplicationStatus.APPLIED })
   @Prop({ enum: ApplicationStatus, default: ApplicationStatus.APPLIED, type: String })
-  status: ApplicationStatus;
+  status!: ApplicationStatus;
 
   @ApiProperty()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
 
 export const ApplicationSchema = SchemaFactory.createForClass(Application);

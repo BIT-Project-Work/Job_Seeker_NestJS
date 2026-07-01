@@ -4,7 +4,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { PassportStrategy } from "@nestjs/passport";
 import { Model } from "mongoose";
 import { ExtractJwt, Strategy } from "passport-jwt";
-import { User, UserDocument } from "src/modules/users/schemas/user.schema";
+import { User, UserDocument } from "../../../modules/users/schemas/user.schema";
 import { Request } from "express";
 import * as bcrypt from 'bcrypt';
 

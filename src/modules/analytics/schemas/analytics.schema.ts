@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { ApiProperty } from '@nestjs/swagger';
-import { User } from 'src/modules/users/schemas/user.schema';
+import { User } from '../../../modules/users/schemas/user.schema';
 
 export type AnalyticsDocument = Document & Analytics;
 
@@ -10,25 +10,25 @@ export class Analytics {
   
   @ApiProperty({ type: String, description: 'Employer User ID' })
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-  employer: Types.ObjectId;
+  employer!: Types.ObjectId;
 
   @ApiProperty({ example: 0 })
   @Prop({ default: 0 })
-  totalJobsPosted: number;
+  totalJobsPosted!: number;
 
   @ApiProperty({ example: 0 })
   @Prop({ default: 0 })
-  totalApplicationsReceived: number;
+  totalApplicationsReceived!: number;
 
   @ApiProperty({ example: 0 })
   @Prop({ default: 0 })
-  totalHired: number;
+  totalHired!: number;
 
   @ApiProperty()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty()
-  updatedAt: Date;
+  updatedAt!: Date;
 }
 
 export const AnalyticsSchema = SchemaFactory.createForClass(Analytics);

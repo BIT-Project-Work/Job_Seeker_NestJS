@@ -9,23 +9,23 @@ import {
   IsString,
   Min,
 } from 'class-validator';
-import { JobType } from 'src/common/enums/jobType';
+import { JobType } from '../../../common/enums/jobType';
 
 export class CreateJobDto {
   @ApiProperty({ example: 'Frontend Developer' })
   @IsString()
   @IsNotEmpty()
-  title: string;
+  title!: string;
 
   @ApiProperty({ example: 'Build UI for our web app' })
   @IsString()
   @IsNotEmpty()
-  description: string;
+  description!: string;
 
   @ApiProperty({ example: '3+ years experience in React' })
   @IsString()
   @IsNotEmpty()
-  requirements: string;
+  requirements!: string;
 
   @ApiPropertyOptional({ example: 'New York, USA' })
   @IsString()
@@ -39,7 +39,7 @@ export class CreateJobDto {
 
   @ApiProperty({ enum: JobType })
   @IsEnum(JobType)
-  type: JobType;
+  type!: JobType;
 
   // @ApiProperty({
   //     description: 'Employer User ID',

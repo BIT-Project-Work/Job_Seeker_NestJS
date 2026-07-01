@@ -1,22 +1,22 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { Role } from 'src/common/enums/role';
+import { Role } from '../../../common/enums/role';
 import { User } from '../schemas/user.schema';
 
 export class UserResponseDto {
     @ApiProperty()
-    _id: string;
+    _id!: string;
 
     @ApiProperty()
-    name: string;
+    name!: string;
 
     @ApiProperty()
-    email: string;
+    email!: string;
 
     @ApiProperty({ required: false, nullable: true })
     avatar?: string | null;
 
     @ApiProperty({ enum: Role })
-    role: Role;
+    role!: Role;
 
     @ApiProperty({ required: false, nullable: true })
     companyName?: string | null;

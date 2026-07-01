@@ -1,6 +1,6 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { IsEmail, IsEnum, IsString, Matches } from "class-validator";
-import { OtpType } from "src/common/enums/otpType";
+import { OtpType } from "../../../common/enums/otpType";
 
 
 export class VerifyOtpDto {
@@ -9,7 +9,7 @@ export class VerifyOtpDto {
         example: 'johndoe@gmail.com',
     })
     @IsEmail()
-    email: string;
+    email!: string;
 
     @ApiProperty({
         example: '123456',
@@ -19,7 +19,7 @@ export class VerifyOtpDto {
     @Matches(/^\d{6}$/, {
         message: 'OTP must be exactly 6 digits and contain only numbers',
     })
-    otp: string;
+    otp!: string;
 
     @ApiProperty({
         example: OtpType.VERIFY_EMAIL,
@@ -27,5 +27,5 @@ export class VerifyOtpDto {
         description: 'Type of OTP being verified',
     })
     @IsEnum(OtpType)
-    type: OtpType;
+    type!: OtpType;
 }

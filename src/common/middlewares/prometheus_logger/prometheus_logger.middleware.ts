@@ -1,7 +1,7 @@
 // logger.middleware.ts
 import { Injectable, NestMiddleware } from '@nestjs/common';
 import { Request, Response, NextFunction } from 'express';
-import { PrometheusService } from 'src/common/prometheus/prometheus.service';
+import { PrometheusService } from '../../../common/prometheus/prometheus.service';
 
 @Injectable()
 export class PrometheusLoggerMiddleware implements NestMiddleware {

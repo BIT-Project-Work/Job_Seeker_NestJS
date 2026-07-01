@@ -7,10 +7,10 @@ export type UserDocument = HydratedDocument<User>;
 
 @Schema({ timestamps: true })
 export class User {
-  _id: Types.ObjectId;
+  _id!: Types.ObjectId;
 
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt!: Date;
+  updatedAt!: Date;
 
   @ApiProperty({
     example: 'John Doe',
@@ -18,7 +18,7 @@ export class User {
     required: true,
   })
   @Prop({ required: true })
-  name: string;
+  name!: string;
 
   @ApiProperty({
     example: 'johndoe@gmail.com',
@@ -26,7 +26,7 @@ export class User {
     required: true,
   })
   @Prop({ required: true, unique: true, lowercase: true })
-  email: string;
+  email!: string;
 
   @ApiProperty({
     example: '******',
@@ -36,7 +36,7 @@ export class User {
   @Prop({
     required: true,
   })
-  password: string;
+  password!: string;
 
   @ApiProperty({
     example: 'JOBSEEKER|EMPLOYER',
@@ -49,7 +49,7 @@ export class User {
     enum: Role,
     default: Role.JOBSEEKER,
   })
-  role: Role;
+  role!: Role;
 
   @ApiProperty({
     description: "Refresh token",
@@ -59,10 +59,10 @@ export class User {
   refreshToken?: string
 
   @Prop()
-  refreshTokenExpiresAt: Date;
+  refreshTokenExpiresAt!: Date;
 
   @Prop({ default: false })
-  isEmailVerified: boolean;
+  isEmailVerified!: boolean;
 
   // @Prop()
   // emailOtp?: string;
@@ -105,7 +105,7 @@ export class User {
   @Prop()
   companyLogo?: string;
 
-  matchPassword: (enteredPassword: string) => Promise<boolean>;
+  matchPassword!: (enteredPassword: string) => Promise<boolean>;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

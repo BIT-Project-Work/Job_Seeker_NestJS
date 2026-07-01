@@ -8,7 +8,7 @@ import {
   Matches,
   MinLength,
 } from 'class-validator';
-import { Role } from 'src/common/enums/role';
+import { Role } from '../../../common/enums/role';
 
 export class RegisterDto {
   @ApiProperty({
@@ -26,7 +26,7 @@ export class RegisterDto {
   })
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Email is required' })
-  email: string;
+  email!: string;
 
   @ApiProperty({
     description: 'User password',
@@ -39,7 +39,7 @@ export class RegisterDto {
   //     message:
   //         'Password must contain at least one uppercase letter, one lowercase letter, one number, and one special character',
   // })
-  password: string;
+  password!: string;
 
   @ApiProperty({
     description: 'User Avatar',
@@ -57,5 +57,5 @@ export class RegisterDto {
   })
   @IsEnum(Role, { message: 'Role must be a valid role' })
   @IsNotEmpty({ message: 'Role is required' })
-  role: Role;
+  role!: Role;
 }

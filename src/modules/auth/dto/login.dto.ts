@@ -8,7 +8,7 @@ export class LoginDto {
   })
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Email is required' })
-  email: string;
+  email!: string;
 
   @ApiProperty({
     description: 'User password',
@@ -16,7 +16,7 @@ export class LoginDto {
   })
   @IsString()
   @IsNotEmpty({ message: 'Password is required' })
-  password: string;
+  password!: string;
 
   @ApiProperty({
     description: 'How long shoudl a user be able to access without needing to login again and again',

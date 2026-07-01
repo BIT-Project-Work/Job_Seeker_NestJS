@@ -7,7 +7,7 @@ import {
   ApplicationDocument,
 } from '../applications/schemas/application.schema';
 import { EmployerAnalyticsResponseDto } from './dto/analytics-response.dto';
-import { getTrend } from 'src/common/utils/trends.util';
+import { getTrend } from '../../common/utils/trends.util';
 
 interface PopulatedApplicant {
   name: string;
