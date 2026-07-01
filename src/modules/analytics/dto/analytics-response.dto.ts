@@ -2,52 +2,52 @@ import { ApiProperty } from '@nestjs/swagger';
 
 export class TrendsDto {
   @ApiProperty({ example: 20 })
-  activeJobs: number;
+  activeJobs!: number;
 
   @ApiProperty({ example: 15 })
-  totalApplicants: number;
+  totalApplicants!: number;
 
   @ApiProperty({ example: 10 })
-  totalHired: number;
+  totalHired!: number;
 }
 
 export class CountsDto {
   @ApiProperty({ example: 5 })
-  totalActiveJobs: number;
+  totalActiveJobs!: number;
 
   @ApiProperty({ example: 23 })
-  totalApplications: number;
+  totalApplications!: number;
 
   @ApiProperty({ example: 3 })
-  totalHired: number;
+  totalHired!: number;
 
   @ApiProperty()
-  trends: TrendsDto;
+  trends!: TrendsDto;
 }
 
 export class RecentJobDto {
   @ApiProperty()
-  title: string;
+  title!: string;
 
   @ApiProperty({ required: false })
   location?: string;
 
   @ApiProperty()
-  type: string;
+  type!: string;
 
   @ApiProperty()
-  createdAt: Date;
+  createdAt!: Date;
 
   @ApiProperty()
-  isClosed: boolean;
+  isClosed!: boolean;
 }
 
 export class ApplicantInfoDto {
   @ApiProperty()
-  name: string;
+  name!: string;
 
   @ApiProperty()
-  email: string;
+  email!: string;
 
   @ApiProperty({ required: false })
   avatar?: string;
@@ -55,24 +55,24 @@ export class ApplicantInfoDto {
 
 export class RecentApplicationDto {
   @ApiProperty({ type: ApplicantInfoDto })
-  applicant: ApplicantInfoDto;
+  applicant!: ApplicantInfoDto;
 
   @ApiProperty()
-  job: { title: string };
+  job!: { title: string };
 
   @ApiProperty()
-  status: string;
+  status!: string;
 
   @ApiProperty()
-  createdAt: Date;
+  createdAt!: Date;
 }
 
 export class EmployerAnalyticsResponseDto {
   @ApiProperty()
-  counts: CountsDto;
+  counts!: CountsDto;
 
   @ApiProperty()
-  data: {
+  data!: {
     recentJobs: RecentJobDto[];
     recentApplications: RecentApplicationDto[];
   };

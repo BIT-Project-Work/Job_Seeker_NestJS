@@ -13,7 +13,7 @@ import { ProfileResponseDto } from './dto/profile-response.dto';
 import * as fs from 'fs';
 import * as path from 'path';
 import { DeleteResumeDto } from './dto/delete-resume.dto';
-import { Role } from 'src/common/enums/role';
+import { Role } from '../../common/enums/role';
 import { PublicProfileResponseDto } from './dto/public-profile-response.dto';
 
 /**

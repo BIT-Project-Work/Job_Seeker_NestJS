@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { UserResponseDto } from 'src/modules/users/dto/user-response.dto';
+import { UserResponseDto } from '../../../modules/users/dto/user-response.dto';
 
 export class AuthResponseDto {
 
@@ -7,7 +7,7 @@ export class AuthResponseDto {
     description: 'Access token for authentication',
     example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...'
   })
-  accessToken: string;
+  accessToken!: string;
 
   // @ApiProperty({
   //   description: 'Refresh token for authentication',
@@ -15,5 +15,5 @@ export class AuthResponseDto {
   // })
   // refreshToken: string;
 
-  user: UserResponseDto;
+  user!: UserResponseDto;
 }

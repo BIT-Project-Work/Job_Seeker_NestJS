@@ -7,7 +7,7 @@ export class VerifyEmailDto {
         example: 'johndoe@gmail.com',
     })
     @IsEmail()
-    email: string;
+    email!: string;
 
     @ApiProperty({
         example: '123456',
@@ -17,5 +17,5 @@ export class VerifyEmailDto {
     @Matches(/^\d{6}$/, {
         message: 'OTP must be exactly 6 digits and contain only numbers',
     })
-    otp: string;
+    otp!: string;
 }

@@ -7,7 +7,7 @@ import {
   IsNumber,
   IsMongoId,
 } from 'class-validator';
-import { JobType } from 'src/common/enums/jobType';
+import { JobType } from '../../../common/enums/jobType';
 
 export class JobQueryDto {
   @ApiPropertyOptional({

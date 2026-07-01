@@ -13,7 +13,7 @@ import {
   ApplicationDocument,
 } from '../applications/schemas/application.schema';
 import { JobQueryDto } from './dto/job-query.dto';
-import { ApplicationStatus } from 'src/common/enums/applicationStatus';
+import { ApplicationStatus } from '../../common/enums/applicationStatus';
 import {
   SavedJob,
   SavedJobDocument,

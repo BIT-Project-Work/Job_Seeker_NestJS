@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Application, ApplicationDocument } from './schemas/application.schema';
 import { Model, Types } from 'mongoose';
 import { Job, JobDocument } from '../jobs/schemas/job.schema';
-import { ApplicationStatus } from 'src/common/enums/applicationStatus';
+import { ApplicationStatus } from '../../common/enums/applicationStatus';
 import { MailService } from '../mail/mail.service';
 
 /**

@@ -23,16 +23,16 @@ import {
 import { AuthResponseDto } from './dto/auth-response.dto';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
-import { JwtAuthGuard } from 'src/common/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { multerOptions } from 'src/common/middlewares/fileupload/singlefileupload.middleware';
+import { multerOptions } from '../../common/middlewares/fileupload/singlefileupload.middleware';
 import type { Request } from 'express';
 import { LoginResponseDto } from './dto/login-response.dto';
 import { RegisterResponseDto } from './dto/register-response.dto';
-import { DeprecationInterceptor } from 'src/common/interceptors/deprecation.interceptor';
-import { ApiDeprecated } from 'src/common/utils/apideprecated';
+import { DeprecationInterceptor } from '../../common/interceptors/deprecation.interceptor';
+import { ApiDeprecated } from '../../common/utils/apideprecated';
 
 /**
  *! Auth API controller

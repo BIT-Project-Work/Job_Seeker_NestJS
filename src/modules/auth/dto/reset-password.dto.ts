@@ -7,7 +7,7 @@ export class ResetPasswordDto {
     example: 'lemongautam79@gmail.com',
   })
   @IsEmail()
-  email: string;
+  email!: string;
 
   @ApiProperty({
     example: '123456',
@@ -17,7 +17,7 @@ export class ResetPasswordDto {
   @Matches(/^\d{6}$/, {
     message: 'OTP must be exactly 6 digits and contain only numbers',
   })
-  otp: string;
+  otp!: string;
 
   @ApiProperty({
     description: 'User password',
@@ -25,5 +25,5 @@ export class ResetPasswordDto {
   })
   @IsString()
   @IsNotEmpty({ message: 'Password is required' })
-  newPassword: string;
+  newPassword!: string;
 }
