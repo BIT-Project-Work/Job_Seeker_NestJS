@@ -37,3 +37,17 @@ export class Application {
 }
 
 export const ApplicationSchema = SchemaFactory.createForClass(Application);
+
+// prevent duplicate job applications
+ApplicationSchema.index({ job: 1, applicant: 1 }, { unique: true });
+
+// get applications of a user
+ApplicationSchema.index({ applicant: 1, createdAt: -1 });
+
+// get applicants for a job
+ApplicationSchema.index({ job: 1, createdAt: -1 });
+
+// optional: filter applications by status
+ApplicationSchema.index({ job: 1, status: 1 });
+
+ApplicationSchema.index({ job: 1 });

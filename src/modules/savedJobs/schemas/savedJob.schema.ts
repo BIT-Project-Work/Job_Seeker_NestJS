@@ -24,3 +24,6 @@ export class SavedJob {
 }
 
 export const SavedJobSchema = SchemaFactory.createForClass(SavedJob);
+
+SavedJobSchema.index({ jobseeker: 1, job: 1 }, { unique: true });
+SavedJobSchema.index({ jobseeker: 1, createdAt: -1 });

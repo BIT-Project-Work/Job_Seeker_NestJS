@@ -31,3 +31,7 @@ export class Analytics {
 }
 
 export const AnalyticsSchema = SchemaFactory.createForClass(Analytics);
+
+AnalyticsSchema.index({ employer: 1 });
+AnalyticsSchema.index({ employer: 1, createdAt: -1 });
+

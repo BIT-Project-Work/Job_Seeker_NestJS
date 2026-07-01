@@ -109,3 +109,19 @@ export class User {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+//! Indexes
+// login lookup
+UserSchema.index({ email: 1 }, { unique: true });
+
+// role filtering
+UserSchema.index({ role: 1 });
+
+// refresh token lookup
+UserSchema.index({ refreshToken: 1 });
+
+// role + email verification queries
+UserSchema.index({ role: 1, isEmailVerified: 1 });
+
+// optional: latest users
+UserSchema.index({ createdAt: -1 });

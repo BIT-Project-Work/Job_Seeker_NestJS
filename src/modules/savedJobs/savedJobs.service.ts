@@ -50,7 +50,7 @@ export class SavedJobsService {
     return { message: 'Job removed from saved list' };
   }
 
-  // Get saved jobs for a user
+  //! Get saved jobs for a user
   async getMySavedJobs(userId: Types.ObjectId) {
     return this.savedJobModel.find({ jobseeker: userId }).populate({
       path: 'job',
