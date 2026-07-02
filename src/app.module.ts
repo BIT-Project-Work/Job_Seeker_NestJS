@@ -39,7 +39,11 @@ import { ProductsModule } from './modules/products/products.module';
       inject: [ConfigService],
       useFactory: (config: ConfigService) => {
         return {
-          uri: config.getOrThrow<string>('DATABASE_URL'),
+          // uri: config.getOrThrow<string>('DATABASE_URL'),
+          uri:
+            process.env.DATABASE_URL ??
+            config.getOrThrow<string>('DATABASE_URL'),
+
           connectionFactory: (connection: Connection) => {
             connection.on('connected', () => console.log('✅ MongoDB connected'));
             connection.on('disconnected', () =>
@@ -56,6 +60,7 @@ import { ProductsModule } from './modules/products/products.module';
       {
         ttl: 60_000, // 1 minute
         limit: 100, // global fallback
+        skipIf: () => process.env.NODE_ENV === 'test',
       },
     ]),
 
