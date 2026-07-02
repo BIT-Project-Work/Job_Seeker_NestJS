@@ -66,11 +66,6 @@ export class JobsService {
       if (maxSalary) query.$and.push({ salaryMin: { $lte: maxSalary } });
     }
 
-    // const jobs = await this.jobModel
-    //   .find(query)
-    //   .populate('company', 'name companyName companyLogo')
-    //   .lean();
-
     const jobs = await this.jobModel
       .find(query)
       .populate({
@@ -79,7 +74,6 @@ export class JobsService {
       })
       .lean();
 
-    // let savedIds: string[] = [];
 
     let savedIdSet = new Set<string>();
     const appliedMap: Record<string, string> = {};
@@ -119,10 +113,6 @@ export class JobsService {
     });
   }
 
-  // findAll(queryDto: JobQueryDto) {
-  //   return 'Hello World';
-  // }
-
   /**
    *! Get All Jobs Without Queries
    */
@@ -152,30 +142,6 @@ export class JobsService {
         }),
       })),
     );
-
-    // const jobs = await this.jobModel.aggregate([
-    //   { $match: { company: new Types.ObjectId(user._id) } },
-    //   {
-    //     $lookup: {
-    //       from: 'applications',
-    //       localField: '_id',
-    //       foreignField: 'job',
-    //       as: 'applications',
-    //     },
-    //   },
-    //   {
-    //     $addFields: {
-    //       applicationCount: { $size: '$applications' },
-    //     },
-    //   },
-    //   {
-    //     $project: {
-    //       applications: 0,
-    //     },
-    //   },
-    // ]);
-
-    // return jobs;
   }
 
   /**

@@ -5,8 +5,8 @@ import { Injectable } from '@nestjs/common';
  */
 @Injectable()
 export class AppService {
-  getHello(): string {
-    return `
+    getHello(): string {
+        return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -136,5 +136,5 @@ Made with ❤️ using NestJS
 </body>
 </html>
 `;
-  }
+    }
 }

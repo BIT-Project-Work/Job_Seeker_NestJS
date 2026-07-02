@@ -23,7 +23,7 @@ export class ApplicationsService {
     private applicationModel: Model<ApplicationDocument>,
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
     private readonly mailService: MailService,
-  ) {}
+  ) { }
 
   /**
    *! Apply to Job
@@ -31,6 +31,14 @@ export class ApplicationsService {
   async applyToJob(user: any, jobId: string, resume?: string) {
     if (user.role !== 'JOBSEEKER') {
       throw new ForbiddenException('Only jobseekers can apply');
+    }
+
+    const job = await this.jobModel.findById(jobId);
+
+    if (!job) throw new NotFoundException('Job not found');
+
+    if (job.isClosed) {
+      throw new BadRequestException('Applications for this job are closed');
     }
 
     const existing = await this.applicationModel.findOne({
@@ -181,25 +189,5 @@ export class ApplicationsService {
     await this.mailService.sendMail(applicant.email, subject, message, message);
 
     return { message: 'Application status updated', status };
-  }
-
-  create(createApplicationDto: CreateApplicationDto) {
-    return 'This action adds a new application';
-  }
-
-  findAll() {
-    return `This action returns all applications`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} application`;
-  }
-
-  // update(id: number, updateApplicationDto: UpdateApplicationDto) {
-  //   return `This action updates a #${id} application`;
-  // }
-
-  remove(id: number) {
-    return `This action removes a #${id} application`;
   }
 }

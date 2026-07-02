@@ -202,7 +202,7 @@ export class AuthV2Service {
 
 
         } catch (error) {
-            console.error('Error during user registration:', error);
+            // console.error('Error during user registration:', error);
             throw new InternalServerErrorException(
                 'An error occured during registration',
             );
