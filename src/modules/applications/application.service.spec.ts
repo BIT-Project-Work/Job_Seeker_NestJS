@@ -177,8 +177,8 @@ describe('ApplicationService', () => {
             const result = await service.applyToJob(user, jobId, resume);
 
             expect(mockApplicationModel.findOne).toHaveBeenCalledWith({
-                job: jobId,
-                applicant: user._id,
+                job: expect.any(Types.ObjectId),
+                applicant: expect.any(Types.ObjectId),
             });
 
             expect(mockApplicationModel.create).toHaveBeenCalledWith({

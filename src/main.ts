@@ -14,56 +14,9 @@ import { DebuggedProvider, DebuggedTree, SpelunkerModule } from 'nestjs-spelunke
 import * as fs from 'fs';
 import * as os from 'os';
 
-// const generateModuleProvidersGraph = async (rootModule: Type<any>) => {
-//   const dependencies = await SpelunkerModule.debug(rootModule);
-
-//   let providerGraph = `graph LR\n`;
-
-//   dependencies.forEach((module: DebuggedTree) => {
-//     const moduleItems = [...module.providers, ...module.controllers];
-//     moduleItems.forEach((moduleItem: DebuggedProvider) => {
-//       return moduleItem.dependencies.forEach((dependency: string) => {
-//         providerGraph += `  ${String(moduleItem.name)}-->${String(
-//           dependency,
-//         )}\n`;
-//       });
-//     });
-//   });
-
-//   const generateSubgraph = (module: DebuggedTree) => {
-//     let subgraph = `  subgraph ${module.name}\n`;
-
-//     const innerItems = Array.from(
-//       new Set(
-//         [...module.providers, ...module.controllers, ...module.exports].map(
-//           (item: DebuggedProvider) => item.name,
-//         )
-//       )
-//     );
-
-//     innerItems.forEach((itemName) => {
-//       subgraph += ` ${itemName}\n`;
-//     });
-
-//     subgraph += ' end\n';
-
-//     return subgraph;
-//   };
-
-//   dependencies.forEach((module: DebuggedTree) => {
-//     providerGraph += generateSubgraph(module);
-//   });
-
-//   return providerGraph;
-// }
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-
-  // if (process.env.NODE_ENV === 'development') {
-  //   const moduleProvidersGraph = await generateModuleProvidersGraph(AppModule);
-  //   fs.writeFileSync('App.providers.mmd', moduleProvidersGraph)
-  // }
 
   app.use(cookieParser());
 

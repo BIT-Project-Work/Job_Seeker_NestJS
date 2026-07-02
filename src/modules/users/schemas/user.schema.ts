@@ -111,9 +111,6 @@ export class User {
 export const UserSchema = SchemaFactory.createForClass(User);
 
 //! Indexes
-// login lookup
-UserSchema.index({ email: 1 }, { unique: true });
-
 // role filtering
 UserSchema.index({ role: 1 });
 

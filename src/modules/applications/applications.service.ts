@@ -42,9 +42,10 @@ export class ApplicationsService {
     }
 
     const existing = await this.applicationModel.findOne({
-      job: jobId,
-      applicant: user._id,
+      job: new Types.ObjectId(jobId),
+      applicant: new Types.ObjectId(user._id),
     });
+    
     if (existing) throw new BadRequestException('Already applied to this job');
 
     const application = await this.applicationModel.create({

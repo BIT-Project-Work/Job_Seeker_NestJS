@@ -14,11 +14,16 @@ export const envSchema = Joi.object({
     JWT_EXPIRES_IN: Joi.number().required(),
 
     ACCESS_TOKEN_TIME: Joi.string().required(),
+
     REFRESH_TOKEN_TIME: Joi.string().required(),
+
     OTP_EXPIRY_TIME: Joi.number().required(),
 
     SMTP_HOST: Joi.string().required(),
+
     SMTP_PORT: Joi.number().default(587),
+
     SMTP_USER: Joi.string().required(),
+
     SMTP_PASS: Joi.string().required(),
 });

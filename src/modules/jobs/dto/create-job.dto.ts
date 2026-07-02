@@ -8,8 +8,38 @@ import {
   IsOptional,
   IsString,
   Min,
+  registerDecorator,
+  ValidationArguments,
+  ValidationOptions,
 } from 'class-validator';
 import { JobType } from '../../../common/enums/jobType';
+
+export function IsSalaryRangeValid(
+  validationOptions?: ValidationOptions,
+) {
+  return function (object: object, propertyName: string) {
+    registerDecorator({
+      name: 'isSalaryRangeValid',
+      target: object.constructor,
+      propertyName,
+      options: validationOptions,
+      validator: {
+        validate(value: number, args: ValidationArguments) {
+          const dto = args.object as any;
+
+          if (
+            dto.salaryMin == null ||
+            value == null
+          ) {
+            return true;
+          }
+
+          return value >= dto.salaryMin;
+        },
+      },
+    });
+  };
+}
 
 export class CreateJobDto {
   @ApiProperty({ example: 'Frontend Developer' })
@@ -41,23 +71,19 @@ export class CreateJobDto {
   @IsEnum(JobType)
   type!: JobType;
 
-  // @ApiProperty({
-  //     description: 'Employer User ID',
-  //     example: '69761fe83480ecf96dff2598',
-  // })
-  // @IsMongoId()
-  // company: string;
-
   @ApiPropertyOptional({ example: 50000 })
   @IsNumber()
   @Min(0)
   @IsOptional()
   salaryMin?: number;
 
-  @ApiPropertyOptional({ example: 100000 })
   @IsNumber()
   @Min(0)
   @IsOptional()
+  @IsSalaryRangeValid({
+    message:
+      'salaryMax must be greater than or equal to salaryMin',
+  })
   salaryMax?: number;
 
   @ApiPropertyOptional({ example: false })

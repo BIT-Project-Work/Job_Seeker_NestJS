@@ -19,11 +19,15 @@ import { PrometheusModule } from './common/prometheus/prometheus.module';
 import { WinstonLoggerMiddleware } from './common/middlewares/winston_logger/winston.middleware';
 import { TestModule } from './modules/test/test.module';
 import { ProductsModule } from './modules/products/products.module';
+
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: `.env.development.local`,
+
+      envFilePath:
+        process.env.ENV_FILE ?? '.env.development.local',
+
       validationSchema: envSchema,
       validationOptions: {
         abortEarly: true,
@@ -33,16 +37,22 @@ import { ProductsModule } from './modules/products/products.module';
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (config: ConfigService) => ({
-        uri: config.getOrThrow<string>('DATABASE_URL'),
-        connectionFactory: (connection: Connection) => {
-          connection.on('connected', () => console.log('✅ MongoDB connected'));
-          connection.on('disconnected', () =>
-            console.log('❌ MongoDB disconnected'),
-          );
-          return connection;
-        },
-      }),
+      useFactory: (config: ConfigService) => {
+        return {
+          // uri: config.getOrThrow<string>('DATABASE_URL'),
+          uri:
+            process.env.DATABASE_URL ??
+            config.getOrThrow<string>('DATABASE_URL'),
+
+          connectionFactory: (connection: Connection) => {
+            connection.on('connected', () => console.log('✅ MongoDB connected'));
+            connection.on('disconnected', () =>
+              console.log('❌ MongoDB disconnected'),
+            );
+            return connection;
+          },
+        }
+      },
     }),
 
     //! Rate Limiting 
@@ -50,6 +60,7 @@ import { ProductsModule } from './modules/products/products.module';
       {
         ttl: 60_000, // 1 minute
         limit: 100, // global fallback
+        skipIf: () => process.env.NODE_ENV === 'test',
       },
     ]),
 
