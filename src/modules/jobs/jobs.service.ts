@@ -18,6 +18,8 @@ import {
   SavedJob,
   SavedJobDocument,
 } from '../savedJobs/schemas/savedJob.schema';
+import { User, UserDocument } from '../users/schemas/user.schema';
+import { calculateRecommendationScore } from '../../common/utils/calculateRecommendationScore';
 
 /**
  *! Job Service
@@ -29,6 +31,7 @@ export class JobsService {
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
     @InjectModel(Application.name) private appModel: Model<ApplicationDocument>,
     @InjectModel(SavedJob.name) private savedJobModel: Model<SavedJobDocument>,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
   ) { }
 
   /**
@@ -214,5 +217,35 @@ export class JobsService {
     await job.save();
 
     return { message: 'Job status updated' };
+  }
+
+  //! Recommendation ko lagi
+  async getRecommendedJobs(userId: string) {
+
+    const user = await this.userModel.findById(userId).lean();
+
+    if (!user) {
+      throw new NotFoundException();
+    }
+
+    const jobs = await this.jobModel.find({
+      isClosed: false,
+    });
+
+    const recommendations = jobs
+      .map(job => ({
+        ...job.toObject(),
+        recommendationScore:
+          calculateRecommendationScore(user, job),
+      }))
+      .sort(
+        (a, b) =>
+          b.recommendationScore -
+          a.recommendationScore,
+      );
+
+    return recommendations.filter(
+      job => job.recommendationScore >= 0.4
+    );
   }
 }

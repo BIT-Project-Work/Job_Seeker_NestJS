@@ -8,6 +8,7 @@ import {
   ApplicationSchema,
 } from '../applications/schemas/application.schema';
 import { SavedJob, SavedJobSchema } from '../savedJobs/schemas/savedJob.schema';
+import { User, UserSchema } from '../users/schemas/user.schema';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { SavedJob, SavedJobSchema } from '../savedJobs/schemas/savedJob.schema';
       { name: Job.name, schema: JobSchema },
       { name: Application.name, schema: ApplicationSchema },
       { name: SavedJob.name, schema: SavedJobSchema },
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   controllers: [JobsController],

@@ -41,7 +41,7 @@ import { JobQueryDto } from './dto/job-query.dto';
 // @ApiBearerAuth('JWT-auth')
 @Controller({
   path: 'jobs',
-  version: ['1', '2'],
+  version: ['2'],
 })
 export class JobsController {
   //! DI
@@ -138,6 +138,21 @@ export class JobsController {
   })
   findEmployerJobs(@GetUser() user: any) {
     return this.jobsService.findEmployerJobs(user);
+  }
+
+  /**
+   * Get recommended jobs for logged-in user
+   */
+  @Get('recommended')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth('JWT-auth')
+  @ApiOperation({
+    summary: 'Get recommended jobs',
+  })
+  async getRecommendedJobs(
+    @GetUser() user: any,
+  ) {
+    return this.jobsService.getRecommendedJobs(user._id);
   }
 
   /**

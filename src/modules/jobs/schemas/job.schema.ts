@@ -21,6 +21,7 @@ export class Job {
   @Prop({ required: true })
   requirements!: string;
 
+  //! Recommendation Engine ko lagi
   @ApiProperty({ example: 'New York, USA', required: false })
   @Prop()
   location?: string;
@@ -28,6 +29,21 @@ export class Job {
   @ApiProperty({ example: 'Engineering', required: false })
   @Prop()
   category?: string;
+
+
+  @ApiProperty({
+    example: '"React", "NestJS", "MongoDB","Docker"',
+    description: 'Add list of skills',
+    required: false,
+  })
+  @Prop({ type: [String], default: [] })
+  skills?: string[];
+
+  @ApiProperty({ example: 3 })
+  @Prop({ required: false })
+  experienceRequired?: number;
+
+  //! Recommendation Engine ko lagi
 
   @ApiProperty({ enum: JobType })
   @Prop({ required: true, enum: JobType, type: String })
