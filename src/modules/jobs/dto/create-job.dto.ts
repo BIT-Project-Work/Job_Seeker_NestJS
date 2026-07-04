@@ -8,6 +8,7 @@ import {
   IsOptional,
   IsString,
   Min,
+  IsArray,
   registerDecorator,
   ValidationArguments,
   ValidationOptions,
@@ -52,10 +53,20 @@ export class CreateJobDto {
   @IsNotEmpty()
   description!: string;
 
-  @ApiProperty({ example: '3+ years experience in React' })
-  @IsString()
-  @IsNotEmpty()
-  requirements!: string;
+  @ApiProperty({ example: 3, required: false })
+  @IsOptional()
+  @IsNumber()
+  experienceRequired?: number;
+
+  @ApiProperty({
+    example: '"React", "NestJS", "MongoDB","Docker"',
+    description: 'Add list of skills',
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  skills?: string[];
 
   @ApiPropertyOptional({ example: 'New York, USA' })
   @IsString()

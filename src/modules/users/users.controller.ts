@@ -36,7 +36,7 @@ import { Role } from '../../common/enums/role';
 @ApiBearerAuth('JWT-auth')
 @Controller({
   path: 'user',
-  version: ['1', '2'],
+  version: ['2'],
 })
 @UseGuards(JwtAuthGuard)
 export class UsersController {

@@ -77,12 +77,27 @@ export class JobsService {
       })
       .lean();
 
+    let user: any = null;
+
+    if (userId) {
+      user = await this.userModel.findById(userId).lean();
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
+    }
 
     let savedIdSet = new Set<string>();
     const appliedMap: Record<string, string> = {};
 
     if (userId) {
       const uid = new Types.ObjectId(userId);
+
+      user = await this.userModel.findById(uid).lean();
+
+      if (!user) {
+        throw new NotFoundException('User not found');
+      }
 
       const saved = await this.savedJobModel
         .find({ jobseeker: uid })
@@ -101,19 +116,32 @@ export class JobsService {
       });
     }
 
-
-
-    return jobs.map((job) => {
+    const result = jobs.map((job) => {
       const id = String(job._id);
-      // const id = job._id.toString();
+
+      const recommendationScore = user
+        ? calculateRecommendationScore(user, job)
+        : 0;
+
       return {
-        // ...job.toObject(),
         ...job,
-        // isSaved: savedIds.includes(id),
         isSaved: savedIdSet.has(id),
         applicationStatus: appliedMap[id] || null,
+        recommendationScore,
+        isRecommended: recommendationScore >= 0.4,
       };
     });
+
+    result.sort((a, b) => {
+      if (a.isRecommended !== b.isRecommended) {
+        return Number(b.isRecommended) - Number(a.isRecommended);
+      }
+
+      return b.recommendationScore - a.recommendationScore;
+    });
+
+    return result;
+
   }
 
   /**

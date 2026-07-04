@@ -20,7 +20,7 @@ import { Role } from '../..//common/enums/role';
 @ApiBearerAuth('JWT-auth')
 @Controller({
   path: 'analytics',
-  version: ['1', '2'],
+  version: ['2'],
 })
 export class AnalyticsController {
   //! DI
