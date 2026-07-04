@@ -30,8 +30,8 @@ import { SavedJobsService } from './savedJobs.service';
   path: 'saved-jobs',
   version: ['1', '2'],
 })
-@UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.JOBSEEKER)
+@UseGuards(JwtAuthGuard)
+// @Roles(Role.JOBSEEKER)
 export class SavedJobsController {
   //! DI
   constructor(private readonly savedJobsService: SavedJobsService) { }

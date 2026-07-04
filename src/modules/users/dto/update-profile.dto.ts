@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsOptional, IsString } from 'class-validator';
+import { IsArray, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class UpdateProfileDto {
   @ApiProperty({
@@ -19,6 +19,34 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   email?: string;
+
+  //! Recommendation Engine ko start
+  @ApiProperty({
+    example: '"React", "NestJS", "MongoDB","Docker"',
+    description: 'Add list of skills',
+    required: false,
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  skills?: string[];
+
+  @ApiProperty({ example: 3, required: false })
+  @IsOptional()
+  @IsNumber()
+  experience?: number;
+
+  @ApiProperty({ example: 'Engineering', required: false })
+  @IsOptional()
+  @IsString()
+  preferredCategory?: string;
+
+  @ApiProperty({ example: 'Kathmandu, Nepal', required: false })
+  @IsOptional()
+  @IsString()
+  preferredLocation?: string;
+
+  //! Recommendation Engine ko end
 
   @ApiProperty({
     description: 'User Avatar',

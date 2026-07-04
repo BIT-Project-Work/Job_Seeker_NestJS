@@ -66,6 +66,10 @@ export class UsersService {
     }
 
     user.name = dto.name ?? user.name;
+    user.skills = dto.skills ?? user.skills;
+    user.experience = dto.experience ?? user.experience;
+    user.preferredCategory = dto.preferredCategory ?? user.preferredCategory;
+    user.preferredLocation = dto.preferredLocation ?? user.preferredLocation;
     user.avatar = dto.avatar ?? user.avatar;
     user.resume = dto.resume ?? user.resume;
 
@@ -81,6 +85,10 @@ export class UsersService {
     return {
       _id: user._id.toString(),
       name: user.name,
+      experience: user.experience,
+      skills: user.skills,
+      preferredCategory: user.preferredCategory,
+      preferredLocation: user.preferredLocation,
       avatar: user.avatar,
       role: user.role,
       companyName: user.companyName || '',

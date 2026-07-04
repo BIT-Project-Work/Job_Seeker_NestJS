@@ -17,10 +17,6 @@ export class Job {
   @Prop({ required: true })
   description!: string;
 
-  @ApiProperty({ example: '3+ years experience in React' })
-  @Prop({ required: true })
-  requirements!: string;
-
   //! Recommendation Engine ko lagi
   @ApiProperty({ example: 'New York, USA', required: false })
   @Prop()
@@ -29,7 +25,6 @@ export class Job {
   @ApiProperty({ example: 'Engineering', required: false })
   @Prop()
   category?: string;
-
 
   @ApiProperty({
     example: '"React", "NestJS", "MongoDB","Docker"',

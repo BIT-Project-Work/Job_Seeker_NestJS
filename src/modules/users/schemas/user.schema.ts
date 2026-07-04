@@ -21,7 +21,7 @@ export class User {
   name!: string;
 
 
-  //! Recommendation Engine ko lagi
+  //! Recommendation Engine ko start
   @ApiProperty({
     example: '"React", "NestJS", "MongoDB","Docker"',
     description: 'Add list of skills',
@@ -34,10 +34,6 @@ export class User {
   @Prop({ required: false })
   experience?: number;
 
-  @ApiProperty({ example: '3' })
-  @Prop({ required: false })
-  education?: string;
-
   @ApiProperty({ example: 'Engineering', required: false })
   @Prop({ required: false })
   preferredCategory?: string;
@@ -46,7 +42,7 @@ export class User {
   @Prop({ required: false })
   preferredLocation?: string;
   
-  //! Recommendation Engine ko lagi
+  //! Recommendation Engine ko end
 
   @ApiProperty({
     example: 'johndoe@gmail.com',
