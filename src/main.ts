@@ -29,6 +29,7 @@ async function bootstrap() {
     exclude: [
       { path: '', method: RequestMethod.GET }, // GET /
       'api/docs',
+      'api/health',
       'api/docs-json',
       'uploads',
     ],

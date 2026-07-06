@@ -1,13 +1,53 @@
 
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
 services:
+
+  backend:
+    image: jobseeker-backend:latest
+    
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+    restart: unless-stopped
+
+    env_file:
+      - .env.development.local
+
+    # expose:
+    #   - "7000"
+
+    ports:
+      - "7000:7000"
+
+    networks:
+      - backend
+      - monitoring
+
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:7000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      # start_period: 30s
+
+    logging: *default-logging
 
   prometheus:
     image: prom/prometheus:latest
-    container_name: prometheus
     restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_started
+
     volumes:
-      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
-      - ./monitoring/prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - ./monitoring/prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml:ro
       - prometheus_data:/prometheus
     command:
       - "--config.file=/etc/prometheus/prometheus.yml"
@@ -16,75 +56,99 @@ services:
       - "9090:9090"
     networks:
       - monitoring
+    logging: *default-logging
 
   node-exporter:
     image: prom/node-exporter:latest
-    container_name: node-exporter
     restart: unless-stopped
     ports:
       - "9100:9100"
     networks:
       - monitoring
+    logging: *default-logging
 
   grafana:
-    image: grafana/grafana:latest
-    container_name: grafana
+    image: grafana/grafana:11.6.0
     restart: unless-stopped
     volumes:
       - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
       - "3001:3000"
-    environment:
-      - GF_SECURITY_ADMIN_USER=admin
-      - GF_SECURITY_ADMIN_PASSWORD=admin
+    env_file:
+      - .env.development.local
     networks:
       - monitoring
     depends_on:
       - prometheus
       - loki
+      - tempo
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
   loki:
     image: grafana/loki:2.9.0
-    container_name: loki
     restart: unless-stopped
     volumes:
-      - ./monitoring/loki/local-config.yml:/etc/loki/local-config.yml
+      - ./monitoring/loki/config.yml:/etc/loki/config.yml:ro
       - loki_data:/loki
-    command: -config.file=/etc/loki/local-config.yml
+    command:
+      - "-config.file=/etc/loki/config.yml"
     ports:
       - "3100:3100"
     networks:
       - monitoring
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3100/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
   alertmanager:
-    image: prom/alertmanager
-    container_name: alertmanager
+    image: prom/alertmanager:latest
     restart: unless-stopped
+    env_file:
+      - .env.development.local
     volumes:
-      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     command:
       - "--config.file=/etc/alertmanager/alertmanager.yml"
+      - "--config.expand-env"
     ports:
       - "9093:9093"
     networks:
       - monitoring
+    logging: *default-logging
 
   promtail:
     image: grafana/promtail:2.9.0
-    container_name: promtail
     restart: unless-stopped
     volumes:
-      - ./monitoring/promtail/promtail-config.yml:/etc/promtail/promtail-config.yml
-      - /var/log:/var/log
-    command: -config.file=/etc/promtail/promtail-config.yml
+      - ./monitoring/promtail/config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /var/log:/var/log:ro
+      - /etc/machine-id:/etc/machine-id:ro
+    command:
+      - "-config.file=/etc/promtail/config.yml"
     networks:
       - monitoring
     depends_on:
       - loki
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9080/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
-    container_name: cadvisor
     restart: unless-stopped
     ports:
       - "8080:8080"
@@ -92,26 +156,39 @@ services:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
       - /sys:/sys:ro
-      - /var/lib/docker/:/var/lib/docker:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
     networks:
       - monitoring
+    logging: *default-logging
 
   tempo:
     image: grafana/tempo:2.9.0
-    container_name: tempo
+    user: "0:0"
     restart: unless-stopped
-    command: [ "-config.file=/etc/tempo.yaml" ]
+    command:
+      - "-config.file=/etc/tempo.yaml"
     volumes:
-      - ./monitoring/tempo/tempo.yml:/etc/tempo.yaml
-      - ./tempo/data:/tmp/tempo 
+      - ./monitoring/tempo/tempo.yml:/etc/tempo.yaml:ro
+      - tempo_data:/tmp/tempo 
     ports:
       - "3200:3200"   # HTTP
       - "4317:4317"   # gRPC OTLP
+      - "4318:4318"   # OLTP HTTP
     networks:
       - monitoring
+    logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:3200/ready"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
 networks:
   monitoring:
+    driver: bridge
+  backend:
+    driver: bridge
 
 volumes:
   prometheus_data:

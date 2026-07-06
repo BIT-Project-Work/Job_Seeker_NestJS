@@ -1,16 +1,31 @@
-// # dependencies
+# ==========================
+# Dependencies
+# ==========================
 node_modules
 npm-debug.log
 yarn-error.log
 pnpm-debug.log
 
-// # env & secrets
+# ==========================
+# Project Files
+# ==========================
+devops
+diagrams
+help.txt
+docker-compose.txt
+vercel.json
+dashboard.json
+
+# ==========================
+# Environment
+# ==========================
 .env
+.env.*
+!.env.example
 
 // # git & config
 .git
 .gitignore
-.github
 .vscode
 
 // # build artifacts (handled inside Docker)
@@ -25,8 +40,6 @@ documentation
 uploads
 
 // # docker files themselves
-Dockerfile
-docker-compose.yml
 .dockerignore
 
 // # OS junk

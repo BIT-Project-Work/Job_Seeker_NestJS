@@ -1,21 +1,32 @@
 server:
   http_listen_port: 3200
   grpc_listen_port: 9095
-  http_listen_address: 0.0.0.0
-  grpc_listen_address: 0.0.0.0
 
 distributor:
   receivers:
     otlp:
       protocols:
-        grpc: {}
-        http: {}
+        grpc:
+          endpoint: 0.0.0.0:4317
+
+        http:
+          endpoint: 0.0.0.0:4318
 
 ingester:
-  max_block_duration: 5m
+
+compactor:
+
+metrics_generator:
+  registry:
+    external_labels:
+      source: tempo
 
 storage:
   trace:
     backend: local
+
     local:
       path: /tmp/tempo/traces
+
+wal:
+  path: /tmp/tempo/wal
