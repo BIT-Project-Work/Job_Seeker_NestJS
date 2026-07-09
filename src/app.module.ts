@@ -13,16 +13,27 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 import { SavedJobsModule } from './modules/savedJobs/savedJobs.module';
 import { envSchema } from './common/config/env.schema';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD } from '@nestjs/core';
 import { CustomThrottlerGuard } from './common/guards/custom-throttler.guard';
 import { PrometheusModule } from './common/prometheus/prometheus.module';
 import { WinstonLoggerMiddleware } from './common/middlewares/winston_logger/winston.middleware';
 import { TestModule } from './modules/test/test.module';
 import { ProductsModule } from './modules/products/products.module';
 import { RedisModule } from './modules/redis/redis.module';
-
+import { LoggerModule } from 'nestjs-pino'
+import { ClsModule, ClsServiceManager } from 'nestjs-cls';
+import { RequestContextMiddleware } from './common/middlewares/request-context.middleware';
+import { getTraceContext } from './common/telemetry/trace-context';
+import { CLS_KEYS } from './common/cls/cls.constants';
+import { AppLoggerModule } from './common/logger/logger.module';
+import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { HealthModule } from './common/health/health.module';
+import { randomUUID } from 'crypto';
+import { context, trace } from '@opentelemetry/api';
 @Module({
   imports: [
+
+    //! Config Module
     ConfigModule.forRoot({
       isGlobal: true,
 
@@ -34,6 +45,7 @@ import { RedisModule } from './modules/redis/redis.module';
         abortEarly: true,
       }
     }),
+
     //! DB Connection
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -68,6 +80,9 @@ import { RedisModule } from './modules/redis/redis.module';
     //! Redis
     RedisModule,
 
+    //! Health
+    HealthModule,
+
     //! Other packages
     AuthModule,
     UsersModule,
@@ -82,6 +97,86 @@ import { RedisModule } from './modules/redis/redis.module';
     TestModule,
 
     ProductsModule,
+
+    ClsModule.forRoot({
+      global: true,
+      middleware: {
+        mount: true,
+        setup: (cls, req) => {
+          cls.set(CLS_KEYS.REQUEST_ID, req.id ?? randomUUID());
+
+          cls.set(CLS_KEYS.IP, req.ip);
+          cls.set(CLS_KEYS.USER_AGENT, req.headers['user-agent']);
+
+          const span = trace.getSpan(context.active());
+
+          if (span) {
+            const spanContext = span.spanContext();
+
+            cls.set(CLS_KEYS.TRACE_ID, spanContext.traceId);
+            cls.set(CLS_KEYS.SPAN_ID, spanContext.spanId);
+          }
+        },
+      },
+    }),
+
+    //! Pino Logging (Transport, Format, Req log, Redaction, Req ID generation etc)
+    LoggerModule.forRoot({
+      pinoHttp: {
+        level:
+          process.env.NODE_ENV === 'production'
+            ? 'info'
+            : 'debug',
+
+        autoLogging: true,
+
+        genReqId(req) {
+          return req.headers['x-request-id']?.toString() ??
+            crypto.randomUUID();
+        },
+
+        redact: [
+          'req.headers.authorization',
+          'req.headers.cookie',
+          'req.body.password',
+          'req.body.confirmPassword',
+          'req.body.refreshToken',
+          'req.body.token',
+        ],
+
+        customProps(req) {
+          const cls = ClsServiceManager.getClsService();
+
+          return {
+            requestId: cls.get(CLS_KEYS.REQUEST_ID),
+            role: cls.get(CLS_KEYS.ROLE),
+            userId: cls.get(CLS_KEYS.USER_ID),
+
+            trace_id: cls.get(CLS_KEYS.TRACE_ID),
+            span_id: cls.get(CLS_KEYS.SPAN_ID),
+
+            ip: cls.get(CLS_KEYS.IP),
+            userAgent: cls.get(CLS_KEYS.USER_AGENT),
+          };
+        },
+
+        transport:
+          process.env.NODE_ENV === 'production'
+            ? undefined
+            : {
+              target: 'pino-pretty',
+              options: {
+                colorize: true,
+                translateTime: 'SYS:standard',
+                singleLine: true,
+                ignore: 'pid,hostname',
+              },
+            },
+      },
+    }),
+
+    //! Application Logging (Services, Controllers and Filters etc)
+    AppLoggerModule,
   ],
   controllers: [
     AppController,
@@ -91,13 +186,17 @@ import { RedisModule } from './modules/redis/redis.module';
     {
       provide: APP_GUARD,
       useClass: CustomThrottlerGuard
+    },
+    {
+      provide: APP_FILTER,
+      useClass: GlobalExceptionFilter
     }
   ],
 })
 export class AppModule implements NestModule {
   //! Logger Middleware
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(LoggerMiddleware).forRoutes('*');
-    // consumer.apply(WinstonLoggerMiddleware).forRoutes('*');
+    // consumer.apply(LoggerMiddleware).forRoutes('*');
+    // consumer.apply(RequestContextMiddleware).forRoutes('*');
   }
 }

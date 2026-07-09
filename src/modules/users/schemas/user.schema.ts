@@ -17,7 +17,7 @@ export class User {
     description: 'Provide Username',
     required: true,
   })
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   name!: string;
 
 
@@ -41,7 +41,7 @@ export class User {
   @ApiProperty({ example: 'Kathmandu, Nepal' })
   @Prop({ required: false })
   preferredLocation?: string;
-  
+
   //! Recommendation Engine ko end
 
   @ApiProperty({

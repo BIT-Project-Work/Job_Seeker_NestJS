@@ -1,85 +1,113 @@
 import {
-  ExceptionFilter,
-  Catch,
   ArgumentsHost,
+  Catch,
+  ExceptionFilter,
   HttpException,
   HttpStatus,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import * as path from 'path';
+
+import { LoggerService } from '../logger/logger.service';
 import { AppException } from '../exceptions/app.exceptions';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-  catch(exception: unknown, host: ArgumentsHost) {
-    const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    // const request = ctx.getRequest<Request>();
+  constructor(
+    private readonly logger: LoggerService,
+  ) { }
+  
 
-    const env = process.env.NODE_ENV || 'development';
+  catch(exception: unknown, host: ArgumentsHost): void {
+
+    
+    const ctx = host.switchToHttp();
+
+    const request = ctx.getRequest<Request>();
+    const response = ctx.getResponse<Response>();
+
+    const isDevelopment =
+      process.env.NODE_ENV !== 'production';
 
     let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Something went wrong on our side.';
     let status: 'fail' | 'error' = 'error';
     let isOperational = false;
-    let stack: string | undefined;
 
     if (exception instanceof HttpException) {
       statusCode = exception.getStatus();
-      message = exception.message;
-      // status =
-      //     `${statusCode}`.startsWith('4') ? 'fail' : 'error';
+
+      const exceptionResponse = exception.getResponse();
+
+      if (typeof exceptionResponse === 'string') {
+        message = exceptionResponse;
+      } else if (
+        typeof exceptionResponse === 'object' &&
+        exceptionResponse !== null
+      ) {
+        message =
+          (exceptionResponse as any).message ??
+          exception.message;
+      } else {
+        message = exception.message;
+      }
 
       status =
         exception instanceof AppException
           ? exception.errorStatus
-          : `${statusCode}`.startsWith('4')
-            ? 'fail'
-            : 'error';
+          : statusCode >= 500
+            ? 'error'
+            : 'fail';
+
       isOperational = true;
-      stack = exception.stack;
     }
 
-    // Extract filename from stack trace
-    let fileName = 'unknown';
-    if (exception instanceof Error && exception.stack) {
-      const match = exception.stack.match(/\((.*):\d+:\d+\)/);
-      if (match && match[1]) {
-        fileName = path.relative(process.cwd(), match[1]);
-      }
+    const logContext = {
+      method: request.method,
+      url: request.originalUrl,
+      statusCode,
+      operational: isOperational,
+      ip: request.ip,
+    };
+
+    if (statusCode >= 500) {
+      this.logger.error(
+        message,
+        exception,
+        logContext,
+      );
+    } else {
+      this.logger.warn(message, logContext);
     }
 
-    if (env === 'development') {
-      console.error('💥 ERROR DETAILS:', exception);
-
-      return response.status(statusCode).json({
+    if (isDevelopment) {
+      response.status(statusCode).json({
         success: false,
         status,
         message,
-        file: fileName,
-        stack,
-        error: exception,
+        stack:
+          exception instanceof Error
+            ? exception.stack
+            : undefined,
       });
+
+      return;
     }
 
-    // Production – operational errors
     if (isOperational) {
-      return response.status(statusCode).json({
+      response.status(statusCode).json({
         success: false,
         status,
         message,
-        file: fileName,
       });
+
+      return;
     }
 
-    // Unknown / programming errors
-    console.error('💥 UNEXPECTED ERROR:', exception);
-
-    return response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
+    response.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
       success: false,
       status: 'error',
       message: 'Something went wrong on our side.',
-      file: fileName,
     });
   }
 }

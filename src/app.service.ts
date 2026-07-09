@@ -120,8 +120,8 @@ analytics and user management.
 
 <ul>
 <li><a href="/api/docs">📘 Swagger Documentation</a></li>
-<li><a href="/metrics">📈 Prometheus Metrics</a></li>
-<li><a href="/health">❤️ Health Check</a></li>
+<li><a href="/api/metrics">📈 Prometheus Metrics</a></li>
+<li><a href="/api/health">❤️ Health Check</a></li>
 </ul>
 </div>
 

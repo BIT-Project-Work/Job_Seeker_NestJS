@@ -22,6 +22,7 @@ import { Otp } from './schemas/otp.schema';
 import { MailService } from '../mail/mail.service';
 import { VerifyEmailDto } from './dto/verifyEmail.dto';
 import ms from 'ms'
+import { LoggerService } from '../../common/logger/logger.service';
 
 type OtpType = 'VERIFY_EMAIL' | 'FORGOT_PASSWORD';
 /**
@@ -39,7 +40,10 @@ export class AuthV2Service {
         private usersService: UsersService,
         private readonly configService: ConfigService,
         private readonly mailService: MailService,
-    ) { }
+        private readonly logger: LoggerService
+    ) {
+        this.logger.setContext(AuthV2Service.name)
+    }
 
     //? Generate access and response tokens
     private async generateTokens(
@@ -144,8 +148,16 @@ export class AuthV2Service {
     async register(registerDto: RegisterDto): Promise<{ message: string }> {
         const { name, email, password, avatar, role } = registerDto;
 
+        this.logger.info('User registration requested', {
+            email,
+            role,
+        });
+
         const emailInUse = await this.usersService.findByEmail(email);
         if (emailInUse) {
+            this.logger.warn('Registration failed - email already exists', {
+                email,
+            });
             throw new BadRequestException('User with this email already exists');
         }
 
@@ -161,6 +173,12 @@ export class AuthV2Service {
                 isEmailVerified: false,
             });
 
+            this.logger.info('User account created', {
+                userId: user._id.toString(),
+                email: user.email,
+                role: user.role,
+            });
+
             // Generate OTP
             const otp = generateOtp();
             const hashedOtp = await bcrypt.hash(otp, 10);
@@ -171,6 +189,10 @@ export class AuthV2Service {
                 expiresAt: otpExpiry(this.configService.get('OTP_EXPIRY_TIME')), // e.g., 10 minutes
                 userId: user._id,
                 type: 'VERIFY_EMAIL',
+            });
+
+            this.logger.debug('Email verification OTP generated', {
+                userId: user._id.toString(),
             });
 
             const companyLogo = 'https://i.imgur.com/3KcynwC.png';
@@ -202,11 +224,28 @@ export class AuthV2Service {
 
             await this.mailService.sendMail(user.email, subject, message, message)
 
+            this.logger.info('Verification email sent', {
+                userId: user._id.toString(),
+                email: user.email,
+            });
+
+            this.logger.info('User registration completed successfully', {
+                userId: user._id.toString(),
+            });
+
             return { message: `Verify Otp sent to your email: ${user.email}` }
 
 
         } catch (error) {
             // console.error('Error during user registration:', error);
+            this.logger.error(
+                'User registration failed',
+                error,
+                {
+                    email,
+                    role,
+                },
+            );
             throw new InternalServerErrorException(
                 'An error occured during registration',
             );
@@ -219,62 +258,135 @@ export class AuthV2Service {
     async verifyEmail(dto: VerifyEmailDto): Promise<{ message: string }> {
         const { email, otp } = dto;
 
-        // Find the user
-        const user = await this.UserModel.findOne({ email });
-        if (!user) {
-            throw new BadRequestException('Invalid email');
-        }
-
-        if (user.isEmailVerified) {
-            throw new BadRequestException('Email already verified');
-        }
-
-        // Find the latest verification OTP from otpModel
-        const otpRecord = await this.otpModel.findOne({
-            userId: user._id,
-            type: 'VERIFY_EMAIL',
+        this.logger.info('Email verification requested', {
+            email,
         });
 
-        if (!otpRecord) {
-            throw new BadRequestException('OTP not found');
-        }
+        try {
+            // Find the user
+            const user = await this.UserModel.findOne({ email });
+            if (!user) {
+                this.logger.warn(
+                    'Email verification failed - user not found',
+                    { email },
+                );
+                throw new BadRequestException('Invalid email');
+            }
 
-        if (otpRecord.expiresAt < new Date()) {
-            // Optionally delete expired OTP
+            if (user.isEmailVerified) {
+                this.logger.warn(
+                    'Email verification skipped - already verified',
+                    {
+                        userId: user.id,
+                        email: user.email,
+                    },
+                );
+                throw new BadRequestException('Email already verified');
+            }
+
+            // Find the latest verification OTP from otpModel
+            const otpRecord = await this.otpModel.findOne({
+                userId: user._id,
+                type: 'VERIFY_EMAIL',
+            });
+
+            if (!otpRecord) {
+                this.logger.warn(
+                    'Email verification failed - OTP not found',
+                    {
+                        userId: user.id,
+                        email: user.email,
+                    },
+                );
+                throw new BadRequestException('OTP not found');
+            }
+
+            if (otpRecord.expiresAt < new Date()) {
+                // Optionally delete expired OTP
+                await this.otpModel.deleteOne({ _id: otpRecord._id });
+
+                this.logger.warn(
+                    'Email verification failed - OTP expired',
+                    {
+                        userId: user.id,
+                        email: user.email,
+                    },
+                );
+
+                throw new BadRequestException('OTP expired');
+            }
+
+            // Compare OTP
+            const isOtpValid = await bcrypt.compare(otp, otpRecord.otp);
+
+            if (!isOtpValid) {
+                this.logger.warn(
+                    'Email verification failed - invalid OTP',
+                    {
+                        userId: user.id,
+                        email: user.email,
+                    },
+                );
+                throw new BadRequestException('Invalid OTP');
+            }
+
+            // OTP is valid, mark user as verified
+            user.isEmailVerified = true;
+            await user.save();
+
+            this.logger.info(
+                'User email verified',
+                {
+                    userId: user.id,
+                    email: user.email,
+                },
+            );
+
+            // Delete OTP after successful verification
             await this.otpModel.deleteOne({ _id: otpRecord._id });
-            throw new BadRequestException('OTP expired');
+
+            // Generate access & refresh tokens
+            const tokens = await this.generateTokens(
+                user.id,
+                user.email,
+                user.role,
+                false, // rememberMe
+            );
+
+            const ttl = Number(ms(this.configService.getOrThrow('REFRESH_TOKEN_TIME')));
+
+            // Save refresh token in DB
+            const refreshTokenExpiresAt = new Date(Date.now() + ttl);
+
+            await this.updateRefreshToken(user.id, tokens.refreshToken, refreshTokenExpiresAt);
+
+            this.logger.info(
+                'Email verified successfully',
+                {
+                    userId: user.id,
+                    email: user.email,
+                },
+            );
+
+            return { message: 'Email verified successfully. You can now login.' };
+
+        } catch (error) {
+            if (error instanceof BadRequestException) {
+                throw error;
+            }
+
+            this.logger.error(
+                'Email verification failed',
+                error,
+                {
+                    email,
+                },
+            );
+
+            throw new InternalServerErrorException(
+                'An error occurred while verifying email.',
+            );
         }
-
-        // Compare OTP
-        const isOtpValid = await bcrypt.compare(otp, otpRecord.otp);
-
-        if (!isOtpValid) {
-            throw new BadRequestException('Invalid OTP');
-        }
-
-        // OTP is valid, mark user as verified
-        user.isEmailVerified = true;
-        await user.save();
-
-        // Delete OTP after successful verification
-        await this.otpModel.deleteOne({ _id: otpRecord._id });
-
-        // Generate access & refresh tokens
-        const tokens = await this.generateTokens(
-            user.id,
-            user.email,
-            user.role,
-            false, // rememberMe
-        );
-
-        const ttl = Number(ms(this.configService.getOrThrow('REFRESH_TOKEN_TIME')));
-
-        // Save refresh token in DB
-        const refreshTokenExpiresAt = new Date(Date.now() + ttl);
-
-        await this.updateRefreshToken(user.id, tokens.refreshToken, refreshTokenExpiresAt);
-
-        return { message: 'Email verified successfully. You can now login.' };
     }
 
     /**
@@ -307,6 +419,14 @@ export class AuthV2Service {
             rememberMe
         )
         await this.updateRefreshToken(user.id, tokens.refreshToken, refreshExpiresAt)
+
+        this.logger.info(
+            'User logged in',
+            {
+                userId: user.id,
+                email: user.email,
+            },
+        );
 
         return {
             accessToken: tokens.accessToken,

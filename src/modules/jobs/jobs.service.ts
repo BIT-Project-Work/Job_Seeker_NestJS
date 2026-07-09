@@ -24,6 +24,7 @@ import { RedisService } from '../redis/redis.service';
 import { CacheKeys } from '../../common/cache/cache.keys';
 import { CacheTTL } from '../../common/cache/cache.ttl';
 import { JobCacheService } from './job-cache.service';
+import { PinoLogger } from 'nestjs-pino';
 
 /**
  *! Job Service
@@ -39,7 +40,10 @@ export class JobsService {
 
     private readonly redisService: RedisService,
     private readonly jobCacheService: JobCacheService,
-  ) { }
+    private readonly logger: PinoLogger,
+  ) {
+    this.logger.setContext(JobsService.name);
+  }
 
   //! Find All Jobs Ko Values haru
   private buildJobQuery(queryDto: JobQueryDto) {
@@ -232,6 +236,13 @@ export class JobsService {
       ...createJobDto,
       company: user._id
     });
+    this.logger.info(
+      {
+        employerId: user._id,
+        jobId: job.id,
+      },
+      'Job created',
+    );
     await this.jobCacheService.invalidateAfterMutation(
       job._id.toString(),
       user._id.toString(),

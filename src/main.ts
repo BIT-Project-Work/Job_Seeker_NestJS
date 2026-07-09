@@ -1,7 +1,7 @@
-import './tracing';
+import './telemetry/instrumentation';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { INestApplication, Logger, Type, ValidationPipe, VersioningType, RequestMethod } from '@nestjs/common';
+import { INestApplication, Type, ValidationPipe, VersioningType, RequestMethod } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -13,10 +13,20 @@ import { PrometheusService } from './common/prometheus/prometheus.service';
 import { DebuggedProvider, DebuggedTree, SpelunkerModule } from 'nestjs-spelunker';
 import * as fs from 'fs';
 import * as os from 'os';
-
+import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(
+    AppModule,
+    {
+      bufferLogs: true,
+    },
+  );
+
+  app.useLogger(app.get(Logger));
+
+  // Enable graceful shutdown
+  app.enableShutdownHooks();
 
   app.use(cookieParser());
 
@@ -109,15 +119,14 @@ async function bootstrap() {
     `,
   });
 
-  // app.useGlobalFilters(new GlobalExceptionFilter());
-  app.useGlobalInterceptors(app.get(MetricsInterceptor));
+  // app.useGlobalInterceptors(app.get(MetricsInterceptor));
 
-  const prometheusService = app.get(PrometheusService);
+  // const prometheusService = app.get(PrometheusService);
 
-  app.use((req, res, next) => {
-    const middleware = new PrometheusLoggerMiddleware(prometheusService);
-    middleware.use(req, res, next);
-  });
+  // app.use((req, res, next) => {
+  //   const middleware = new PrometheusLoggerMiddleware(prometheusService);
+  //   middleware.use(req, res, next);
+  // });
 
   // await app.listen(process.env.PORT ?? 7000, '0.0.0.0');
 
@@ -140,6 +149,6 @@ async function bootstrap() {
 }
 
 bootstrap().catch((error) => {
-  Logger.error('Error starting server', error);
+  console.error(error);
   process.exit(1);
 });

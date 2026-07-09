@@ -17,12 +17,14 @@ export class AppController {
     return this.appService.getHello();
   }
 
-  @Get('health')
-  healthCheck() {
-    return {
-      status: 'UP',
-      timestamp: new Date().toISOString(),
-      uptime: process.uptime(),
-    };
-  }
+  // @Get('health')
+  // healthCheck() {
+  //   return {
+  //     status: 'UP',
+  //     timestamp: new Date().toISOString(),
+  //     uptime: process.uptime(),
+  //   };
+  // }
+
+
 }

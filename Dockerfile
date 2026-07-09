@@ -32,4 +32,4 @@ COPY --from=builder /app/dist ./dist
 
 EXPOSE 7000
 
-CMD ["node", "dist/main"]
+CMD ["node", "dist/instrument"]

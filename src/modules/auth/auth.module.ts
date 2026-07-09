@@ -13,6 +13,7 @@ import { Otp, OtpSchema } from './schemas/otp.schema';
 import { MailModule } from '../mail/mail.module';
 import { AuthV2Controller } from './authv2.controller';
 import { AuthV2Service } from './authv2.service';
+import { AppLoggerModule } from '../../common/logger/logger.module';
 
 
 @Module({
@@ -38,7 +39,8 @@ import { AuthV2Service } from './authv2.service';
       },
     ]),
     UsersModule,
-    MailModule
+    MailModule,
+    AppLoggerModule
   ],
   controllers: [AuthController, AuthV2Controller],
   providers: [AuthService, AuthV2Service, JwtStrategy, RefreshTokenStrategy],

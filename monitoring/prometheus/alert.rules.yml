@@ -1,5 +1,22 @@
 groups:
 
+  # - name: test
+
+  #   rules:
+  #     - alert: TestAlert
+
+  #       expr: vector(1)
+
+  #       for: 10s
+
+  #       labels:
+  #         severity: info
+
+  #       annotations:
+  #         summary: Test Alert
+
+  #         description: Alertmanager is working correctly.
+
   - name: infrastructure
 
     rules:

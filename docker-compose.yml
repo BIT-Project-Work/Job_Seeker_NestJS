@@ -17,7 +17,7 @@ services:
     restart: unless-stopped
 
     env_file:
-      - .env.development.local
+      - .env.production
 
     # expose:
     #   - "7000"
@@ -29,17 +29,17 @@ services:
       - backend
       - monitoring
 
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:7000/api/health"]
-      interval: 30s
-      timeout: 10s
-      retries: 5
-      # start_period: 30s
+    # healthcheck:
+    #   test: ["CMD", "wget", "-qO-", "http://localhost:7000/api/health"]
+    #   interval: 30s
+    #   timeout: 10s
+    #   retries: 5
+      # start_period: 90s
 
     logging: *default-logging
 
   prometheus:
-    image: prom/prometheus:latest
+    image: prom/prometheus:v3.5.0
     restart: unless-stopped
     depends_on:
       backend:
@@ -58,26 +58,37 @@ services:
       - monitoring
     logging: *default-logging
 
-  node-exporter:
-    image: prom/node-exporter:latest
+  alertmanager:
+    image: prom/alertmanager:v0.28.1
     restart: unless-stopped
+    volumes:
+      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
+      - ./monitoring/prometheus/alert.rules.yml:/etc/prometheus/alert.rules.yml:ro
+    command:
+      - "--config.file=/etc/alertmanager/alertmanager.yml"
     ports:
-      - "9100:9100"
+      - "9093:9093"
     networks:
       - monitoring
     logging: *default-logging
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost:9093/-/healthy"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
 
   grafana:
-    image: grafana/grafana:11.6.0
+    image: grafana/grafana:12.2.0
     restart: unless-stopped
     volumes:
       - grafana_data:/var/lib/grafana
+      - grafana_plugins:/var/lib/grafana/plugins
       - ./monitoring/grafana/provisioning:/etc/grafana/provisioning:ro
       - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards:ro
     ports:
       - "3001:3000"
     env_file:
-      - .env.development.local
+      - .env.production
     networks:
       - monitoring
     depends_on:
@@ -92,7 +103,7 @@ services:
       retries: 5
 
   loki:
-    image: grafana/loki:2.9.0
+    image: grafana/loki:2.9.13
     restart: unless-stopped
     volumes:
       - ./monitoring/loki/config.yml:/etc/loki/config.yml:ro
@@ -110,60 +121,26 @@ services:
       timeout: 5s
       retries: 5
 
-  alertmanager:
-    image: prom/alertmanager:latest
+  alloy:
+    image: grafana/alloy:v1.8.3
     restart: unless-stopped
-    env_file:
-      - .env.development.local
-    volumes:
-      - ./monitoring/alertmanager/alertmanager.yml:/etc/alertmanager/alertmanager.yml:ro
     command:
-      - "--config.file=/etc/alertmanager/alertmanager.yml"
-      - "--config.expand-env"
-    ports:
-      - "9093:9093"
-    networks:
-      - monitoring
-    logging: *default-logging
-
-  promtail:
-    image: grafana/promtail:2.9.0
-    restart: unless-stopped
+      - run
+      - /etc/alloy/config.alloy
     volumes:
-      - ./monitoring/promtail/config.yml:/etc/promtail/config.yml:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - /var/log:/var/log:ro
-      - /etc/machine-id:/etc/machine-id:ro
-    command:
-      - "-config.file=/etc/promtail/config.yml"
-    networks:
-      - monitoring
+      - ./monitoring/alloy/config.alloy:/etc/alloy/config.alloy:ro
+      # Read Docker logs
+      - /var/run/docker.sock:/var/run/docker.sock
+      # Persist positions
+      - alloy_data:/var/lib/alloy
     depends_on:
       - loki
-    logging: *default-logging
-    healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:9080/ready"]
-      interval: 30s
-      timeout: 5s
-      retries: 5
-
-  cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
-    restart: unless-stopped
-    ports:
-      - "8080:8080"
-    volumes:
-      - /:/rootfs:ro
-      - /var/run:/var/run:ro
-      - /sys:/sys:ro
-      - /var/lib/docker:/var/lib/docker:ro
-      - /dev/disk:/dev/disk:ro
     networks:
       - monitoring
     logging: *default-logging
 
   tempo:
-    image: grafana/tempo:2.9.0
+    image: grafana/tempo:2.9.2
     user: "0:0"
     restart: unless-stopped
     command:
@@ -184,6 +161,30 @@ services:
       timeout: 5s
       retries: 5
 
+  node-exporter:
+    image: prom/node-exporter:v1.9.1
+    restart: unless-stopped
+    ports:
+      - "9100:9100"
+    networks:
+      - monitoring
+    logging: *default-logging
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:v0.49.2
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker:/var/lib/docker:ro
+      - /dev/disk:/dev/disk:ro
+    networks:
+      - monitoring
+    logging: *default-logging
+
 networks:
   monitoring:
     driver: bridge
@@ -193,5 +194,7 @@ networks:
 volumes:
   prometheus_data:
   grafana_data:
+  grafana_plugins:
   loki_data:
   tempo_data:
+  alloy_data:
