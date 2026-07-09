@@ -67,6 +67,7 @@ export class HealthController {
 
                 return result;
             } catch (error) {
+                console.error(error);
                 span.recordException(error as Error);
 
                 span.setStatus({

@@ -16,15 +16,26 @@ export class GlobalExceptionFilter implements ExceptionFilter {
   constructor(
     private readonly logger: LoggerService,
   ) { }
-  
+
 
   catch(exception: unknown, host: ArgumentsHost): void {
 
-    
+
     const ctx = host.switchToHttp();
 
     const request = ctx.getRequest<Request>();
     const response = ctx.getResponse<Response>();
+
+    if (
+      exception instanceof HttpException &&
+      request.originalUrl === '/health'
+    ) {
+      response.status(exception.getStatus()).json(
+        exception.getResponse(),
+      );
+
+      return;
+    }
 
     const isDevelopment =
       process.env.NODE_ENV !== 'production';
