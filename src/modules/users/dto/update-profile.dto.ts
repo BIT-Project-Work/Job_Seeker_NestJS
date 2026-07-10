@@ -58,6 +58,15 @@ export class UpdateProfileDto {
   avatar?: string;
 
   @ApiProperty({
+    description: 'User Avatar Public Wala',
+    example: 'http://localhost:7000/uploads/lemon.png',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  avatarPublicId?: string;
+
+  @ApiProperty({
     description: 'User Resume',
     example: 'http://localhost:7000/uploads/lemonresume.png',
     required: false,
@@ -65,6 +74,16 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   resume?: string;
+
+
+  @ApiProperty({
+    description: 'User Resume Public Wala',
+    example: 'http://localhost:7000/uploads/lemonresume.png',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  resumePublicId?: string;
 
   // employer-only fields
   @ApiProperty({
@@ -90,4 +109,12 @@ export class UpdateProfileDto {
   @IsOptional()
   @IsString()
   companyLogo?: string;
+
+  @ApiProperty({
+    example: 'companylogo.jpg',
+    description: 'Provide the logo of the Company Public Wala',
+  })
+  @IsOptional()
+  @IsString()
+  companyLogoPublicId?: string;
 }

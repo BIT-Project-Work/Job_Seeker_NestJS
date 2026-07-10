@@ -101,12 +101,18 @@ export class User {
   @Prop()
   avatar?: string;
 
+  @Prop()
+  avatarPublicId?: string;
+
   @ApiProperty({
     example: 'janedone.jpg',
     description: 'Provide the resume of the User',
   })
   @Prop()
   resume?: string;
+
+  @Prop()
+  resumePublicId?: string;
 
   @ApiProperty({
     example: 'Company Name Pvt. Ltd',
@@ -128,6 +134,9 @@ export class User {
   })
   @Prop()
   companyLogo?: string;
+
+  @Prop()
+  companyLogoPublicId?: string;
 
   matchPassword!: (enteredPassword: string) => Promise<boolean>;
 }

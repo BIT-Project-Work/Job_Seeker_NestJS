@@ -179,9 +179,8 @@ export class UsersController {
   })
   async removeResume(
     @GetUser('_id') userId: string,
-    @Body() dto: DeleteResumeDto,
   ) {
-    return this.usersService.deleteResume(userId, dto);
+    return this.usersService.deleteResume(userId);
   }
 
   /**

@@ -25,7 +25,6 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
             user,
             info,
             context,
-            status,
         );
 
         this.cls.setIfUndefined(CLS_KEYS.USER_ID, authenticatedUser._id.toString());

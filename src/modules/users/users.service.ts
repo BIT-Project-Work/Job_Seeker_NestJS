@@ -15,7 +15,8 @@ import * as path from 'path';
 import { DeleteResumeDto } from './dto/delete-resume.dto';
 import { Role } from '../../common/enums/role';
 import { PublicProfileResponseDto } from './dto/public-profile-response.dto';
-
+import cloudinary from '../../common/config/cloudinary.config';
+import { LoggerService } from '../../common/logger/logger.service';
 /**
  *! User Services
  */
@@ -25,7 +26,10 @@ export class UsersService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
-  ) { }
+    private readonly logger: LoggerService
+  ) {
+    this.logger.setContext(UsersService.name)
+  }
 
   async create(createUserDto: Partial<User>) {
     return await this.userModel.create(createUserDto);
@@ -70,17 +74,122 @@ export class UsersService {
     user.experience = dto.experience ?? user.experience;
     user.preferredCategory = dto.preferredCategory ?? user.preferredCategory;
     user.preferredLocation = dto.preferredLocation ?? user.preferredLocation;
-    user.avatar = dto.avatar ?? user.avatar;
-    user.resume = dto.resume ?? user.resume;
+
+    /*
+     * Avatar replacement
+     */
+    if (dto.avatar === "" && dto.avatarPublicId === "") {
+      if (user.avatarPublicId) {
+        await cloudinary.uploader.destroy(user.avatarPublicId);
+      }
+
+      user.avatar = "";
+      user.avatarPublicId = "";
+    }
+
+    // Avatar replaced
+    else if (
+      dto.avatarPublicId &&
+      dto.avatarPublicId !== user.avatarPublicId
+    ) {
+      if (user.avatarPublicId) {
+        await cloudinary.uploader.destroy(user.avatarPublicId);
+      }
+
+      user.avatar = dto.avatar;
+      user.avatarPublicId = dto.avatarPublicId;
+    }
+
+    /*
+     * Resume replacement
+     */
+    // if (
+    //   dto.resumePublicId && dto.resumePublicId !== user.resumePublicId
+    // ) {
+    //   if (user.resumePublicId) {
+    //     try {
+    //       await cloudinary.uploader.destroy(
+    //         user.resumePublicId,
+    //         {
+    //           resource_type: 'raw',
+    //         },
+    //       );
+    //       this.logger.info('Old resume deleted', {
+    //         userId: user._id.toString(),
+    //         email: user.email,
+    //       })
+    //     } catch (error) {
+    //       this.logger.warn(
+    //         'Failed to delete old resume',
+    //         {
+    //           userId,
+    //           publicId: user.resumePublicId,
+    //         },
+    //       );
+    //     }
+    //   }
+
+    //   user.resume = dto.resume;
+    //   user.resumePublicId = dto.resumePublicId;
+    // }
+
+    if (dto.resume === "" && dto.resumePublicId === "") {
+      if (user.resumePublicId) {
+        await cloudinary.uploader.destroy(user.resumePublicId);
+      }
+
+      user.resume = "";
+      user.resumePublicId = "";
+    }
+
+    // resume replaced
+    else if (
+      dto.resumePublicId &&
+      dto.resumePublicId !== user.resumePublicId
+    ) {
+      if (user.resumePublicId) {
+        await cloudinary.uploader.destroy(user.resumePublicId);
+      }
+
+      user.resume = dto.resume;
+      user.resumePublicId = dto.resumePublicId;
+    }
 
     if (user.role === 'EMPLOYER') {
       user.companyName = dto.companyName ?? user.companyName;
-      user.companyDescription =
-        dto.companyDescription ?? user.companyDescription;
-      user.companyLogo = dto.companyLogo ?? user.companyLogo;
+      user.companyDescription = dto.companyDescription ?? user.companyDescription;
+      /*
+     * Company logo replacement
+     */
+      if (dto.companyLogo === "" && dto.companyLogoPublicId === "") {
+        if (user.companyLogoPublicId) {
+          await cloudinary.uploader.destroy(user.companyLogoPublicId);
+        }
+
+        user.companyLogo = "";
+        user.companyLogoPublicId = "";
+      }
+
+      // companyLogo replaced
+      else if (
+        dto.companyLogoPublicId &&
+        dto.companyLogoPublicId !== user.companyLogoPublicId
+      ) {
+        if (user.companyLogoPublicId) {
+          await cloudinary.uploader.destroy(user.companyLogoPublicId);
+        }
+
+        user.companyLogo = dto.companyLogo;
+        user.companyLogoPublicId = dto.companyLogoPublicId;
+      }
+
     }
 
     await user.save();
+    this.logger.info('User Profile Updated', {
+      userId: user._id.toString(),
+      email: user.email,
+    })
 
     return {
       _id: user._id.toString(),
@@ -101,7 +210,7 @@ export class UsersService {
   /**
    *!  Delete Resume
    */
-  async deleteResume(userId: string, dto: DeleteResumeDto) {
+  async deleteResume(userId: string) {
 
     const user = await this.userModel.findById(userId);
 
@@ -113,20 +222,36 @@ export class UsersService {
       throw new ForbiddenException('Only jobseekers can delete resume');
     }
 
-    // Extract filename from URL
-    const fileName = dto.resumeUrl.split('/').pop();
+    if (user.resumePublicId) {
+      try {
+        await cloudinary.uploader.destroy(
+          user.resumePublicId,
+          {
+            resource_type: 'raw',
+          },
+        );
 
-    if (fileName) {
-      const filePath = path.join(process.cwd(), 'uploads', fileName);
-
-      if (fs.existsSync(filePath)) {
-        fs.unlinkSync(filePath);
+        this.logger.info(
+          'Resume deleted from Cloudinary',
+          {
+            userId: user._id.toString(),
+            email: user.email,
+          },
+        );
+      } catch (error) {
+        this.logger.warn(
+          'Failed to delete resume from Cloudinary',
+          {
+            userId,
+            publicId: user.resumePublicId,
+          },
+        );
       }
     }
 
     user.resume = '';
+    user.resumePublicId = '';
     await user.save();
-
     return {
       message: 'Resume deleted successfully',
     };

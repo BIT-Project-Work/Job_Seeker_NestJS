@@ -40,6 +40,7 @@ import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { VerifyOtpDto } from './dto/verifyOtp.dto';
 import ms from 'ms';
+import { avatarStorage, companyLogosStorage, resumeStorage } from '../../common/config/cloudinary.storage';
 
 /**
  *! Auth V1 API controller
@@ -400,15 +401,14 @@ export class AuthV2Controller {
     }
 
     /**
-     *! Post image
+     *! Upload Avatar
      */
-    @Post('upload_image')
+    @Post('upload/avatar')
+    @UseGuards(JwtAuthGuard)
     @HttpCode(HttpStatus.OK)
     @ModerateThrottler()
     @ApiConsumes('multipart/form-data')
     @ApiBody({
-        description: 'File upload',
-        type: 'multipart/form-data',
         schema: {
             type: 'object',
             properties: {
@@ -419,18 +419,122 @@ export class AuthV2Controller {
             },
         },
     })
-    @ApiOperation({ summary: 'Upload a file' })
-    @UseInterceptors(FileInterceptor('file', multerOptions))
-    uploadImage(@UploadedFile() file: Express.Multer.File, @Req() req: Request) {
-        // console.log(file)
+    @ApiOperation({
+        summary: 'Upload avatar image',
+    })
+    @UseInterceptors(
+        FileInterceptor(
+            'file',
+            {
+                storage: avatarStorage,
+            },
+        ),
+    )
+    uploadAvatar(
+        @UploadedFile()
+        file: Express.Multer.File,
+    ) {
         if (!file) {
-            throw new BadRequestException('No file uploaded');
+            throw new BadRequestException(
+                'No file uploaded',
+            );
         }
 
-        const imageUrl = `${req.protocol}://${req.get('host')}/uploads/${file.filename}`;
+        return {
+            url: file.path,
+            publicId: file.filename,
+        };
+    }
+
+    /**
+   *! Upload Company Logo
+   */
+    @Post('upload/company-logo')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtAuthGuard)
+    @ModerateThrottler()
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                },
+            },
+        },
+    })
+    @ApiOperation({
+        summary: 'Upload company logo',
+    })
+    @UseInterceptors(
+        FileInterceptor(
+            'file',
+            {
+                storage: companyLogosStorage,
+            },
+        ),
+    )
+    uploadCompanyLogo(
+        @UploadedFile()
+        file: Express.Multer.File,
+    ) {
+        if (!file) {
+            throw new BadRequestException(
+                'No file uploaded',
+            );
+        }
 
         return {
-            imageUrl,
+            url: file.path,
+            publicId: file.filename,
+        };
+    }
+
+    /**
+   *! Upload Resume
+   */
+    @Post('upload/resume')
+    @HttpCode(HttpStatus.OK)
+    @UseGuards(JwtAuthGuard)
+    @ModerateThrottler()
+    @ApiConsumes('multipart/form-data')
+    @ApiBody({
+        schema: {
+            type: 'object',
+            properties: {
+                file: {
+                    type: 'string',
+                    format: 'binary',
+                },
+            },
+        },
+    })
+    @ApiOperation({
+        summary: 'Upload resume',
+    })
+    @UseInterceptors(
+        FileInterceptor(
+            'file',
+            {
+                storage: resumeStorage,
+            },
+        ),
+    )
+    uploadResume(
+        @UploadedFile()
+        file: Express.Multer.File,
+    ) {
+        if (!file) {
+            throw new BadRequestException(
+                'No file uploaded',
+            );
+        }
+
+        return {
+            url: file.path,
+            publicId: file.filename,
         };
     }
 }

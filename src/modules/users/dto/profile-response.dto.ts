@@ -10,9 +10,12 @@ export class ProfileResponseDto {
   preferredLocation?: string;
 
   avatar?: string;
+  avatarPublicId?: string;
   role!: Role;
   companyName?: string;
   companyDescription?: string;
   companyLogo?: string;
+  companyLogoPublicId?: string;
   resume?: string;
+  resumePublicId?: string;
 }

@@ -51,6 +51,15 @@ export class RegisterDto {
   avatar?: string;
 
   @ApiProperty({
+    description: 'User Avatar',
+    example: 'http://localhost:7000/uploads/lemon.png',
+    required: false,
+  })
+  @IsOptional()
+  @IsString()
+  avatarPublicId?: string;
+
+  @ApiProperty({
     example: 'JOBSEEKER|EMPLOYER',
     description: 'Provide the role of the User',
     required: true,

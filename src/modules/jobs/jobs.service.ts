@@ -253,101 +253,14 @@ export class JobsService {
   /**
    *! Get All Jobs with Queries
    */
-  // async findAll(queryDto: JobQueryDto) {
-  //   const { keyword, location, category, type, minSalary, maxSalary, userId } =
-  //     queryDto;
-
-  //   const query: any = {
-  //     isClosed: false,
-  //     ...(keyword && { title: { $regex: keyword, $options: 'i' } }),
-  //     ...(location && { location: { $regex: location, $options: 'i' } }),
-  //     ...(category && { category }),
-  //     ...(type && { type }),
-  //   };
-
-  //   if (minSalary || maxSalary) {
-  //     query.$and = [];
-  //     if (minSalary) query.$and.push({ salaryMax: { $gte: minSalary } });
-  //     if (maxSalary) query.$and.push({ salaryMin: { $lte: maxSalary } });
-  //   }
-
-  //   const jobs = await this.jobModel
-  //     .find(query)
-  //     .populate({
-  //       path: 'company',
-  //       select: 'name companyName companyLogo',
-  //     })
-  //     .lean();
-
-  //   let user: any = null;
-
-  //   if (userId) {
-  //     user = await this.userModel.findById(userId).lean();
-
-  //     if (!user) {
-  //       throw new NotFoundException('User not found');
-  //     }
-  //   }
-
-  //   let savedIdSet = new Set<string>();
-  //   const appliedMap: Record<string, string> = {};
-
-  //   if (userId) {
-  //     const uid = new Types.ObjectId(userId);
-
-  //     user = await this.userModel.findById(uid).lean();
-
-  //     if (!user) {
-  //       throw new NotFoundException('User not found');
-  //     }
-
-  //     const saved = await this.savedJobModel
-  //       .find({ jobseeker: uid })
-  //       .select('job');
-
-  //     savedIdSet = new Set(saved.map((s) => s.job.toString()));
-
-  //     const apps = await this.appModel
-  //       .find({ applicant: uid })
-  //       .select('job status');
-
-  //     apps.forEach((app) => {
-  //       appliedMap[String(app.job)] = app.status;
-  //     });
-  //   }
-
-  //   const result = jobs.map((job) => {
-  //     const id = String(job._id);
-
-  //     const recommendationScore = user
-  //       ? calculateRecommendationScore(user, job)
-  //       : 0;
-
-  //     return {
-  //       ...job,
-  //       isSaved: savedIdSet.has(id),
-  //       applicationStatus: appliedMap[id] || null,
-  //       recommendationScore,
-  //       isRecommended: recommendationScore >= 0.4,
-  //     };
-  //   });
-
-  //   result.sort((a, b) => {
-  //     if (a.isRecommended !== b.isRecommended) {
-  //       return Number(b.isRecommended) - Number(a.isRecommended);
-  //     }
-
-  //     return b.recommendationScore - a.recommendationScore;
-  //   });
-
-  //   return result;
-
-  // }
-
   async findAll(queryDto: JobQueryDto) {
+    const { page = 1, limit = 10 } = queryDto;
+
     const query = this.buildJobQuery(queryDto);
 
     const jobs = await this.getJobs(query);
+
+    const total = jobs.length;
 
     const {
       user,
@@ -362,7 +275,27 @@ export class JobsService {
       appliedMap,
     );
 
-    return this.sortJobs(enrichedJobs);
+    const sortedJobs = this.sortJobs(enrichedJobs);
+
+    const startIndex =
+      (page - 1) * limit;
+
+    const paginatedJobs =
+      sortedJobs.slice(
+        startIndex,
+        startIndex + limit,
+      );
+
+    return {
+      jobs: paginatedJobs,
+      pagination: {
+        page,
+        limit,
+        total,
+        totalPages: Math.ceil(total / limit),
+        hasNextPage: page * limit < total,
+      },
+    }
   }
 
   /**

@@ -146,7 +146,7 @@ export class AuthV2Service {
      *! Register a new user
      */
     async register(registerDto: RegisterDto): Promise<{ message: string }> {
-        const { name, email, password, avatar, role } = registerDto;
+        const { name, email, password, role } = registerDto;
 
         this.logger.info('User registration requested', {
             email,
@@ -169,8 +169,9 @@ export class AuthV2Service {
                 email,
                 password: hashedPassword,
                 role,
-                avatar,
                 isEmailVerified: false,
+                // avatar,
+                // avatarPublicId,
             });
 
             this.logger.info('User account created', {
