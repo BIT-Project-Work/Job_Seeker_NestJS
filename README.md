@@ -1,99 +1,262 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+![CI](https://github.com/lemongautam79/jobseeker-backend/actions/workflows/backend-ci.yml/badge.svg)
+![Docker](https://img.shields.io/badge/docker-ready-blue)
+![Terraform](https://img.shields.io/badge/terraform-infrastructure-623CE4)
+![NestJS](https://img.shields.io/badge/nestjs-backend-E0234E)
+![React](https://img.shields.io/badge/react-frontend-61DAFB)
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+# JobSeeker
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+A production-ready full-stack job portal platform built with modern web technologies, cloud infrastructure, observability tooling, and automated CI/CD pipelines.
 
-## Description
+## Features
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### Job Seeker Features
 
-## Project setup
+- User registration and authentication
+- Email verification and password reset
+- Browse and search jobs
+- Save jobs for later
+- Apply to jobs with resume upload
+- Personalized job recommendations
+- Application tracking
 
-```bash
-$ npm install
+### Employer Features
+
+- Create and manage job postings
+- View applicants
+- Applicant analytics dashboard
+- Candidate management
+
+### Platform Features
+
+- JWT authentication with refresh token rotation
+- Redis caching
+- OpenTelemetry tracing
+- Centralized logging
+- Metrics collection
+- HTTPS with Let's Encrypt
+- Automated CI/CD deployments
+
+---
+
+## Tech Stack
+
+### Frontend
+
+- React
+- Vite
+- Tailwind CSS v4
+- Redux Toolkit
+- RTK Query
+
+### Backend
+
+- NestJS
+- MongoDB Atlas
+- Mongoose
+- Redis (Upstash)
+
+### Infrastructure
+
+- Docker
+- Docker Compose
+- AWS EC2
+- Terraform
+- Ansible
+- Nginx
+- Certbot
+
+### Observability
+
+- Prometheus
+- Grafana
+- Loki
+- Tempo
+- Alloy
+- OpenTelemetry
+
+### DevOps
+
+- GitHub Actions
+- GitHub Container Registry
+
+---
+
+## Architecture
+
+```mermaid
+flowchart TD
+
+    User[Users] -->|HTTPS| FE[Vercel Frontend]
+    FE -->|REST API| Nginx[Nginx Reverse Proxy]
+    Nginx --> Backend[NestJS Backend]
+
+    Backend --> Mongo[(MongoDB Atlas)]
+    Backend --> Redis[(Upstash Redis)]
+
+    Backend --> OTEL[OpenTelemetry SDK]
+
+    OTEL --> Tempo[Tempo Traces]
+    Backend --> Prometheus[Prometheus Metrics]
+    Backend --> Alloy[Alloy Log Collector]
+
+    Alloy --> Loki[Loki Logs]
+
+    Prometheus --> Grafana[Grafana Dashboard]
+    Loki --> Grafana
+    Tempo --> Grafana
 ```
 
-## Compile and run the project
+Additional documentation:
 
-```bash
-# development
-$ npm run start
+- `docs/architecture.md`
+- `docs/deployment.md`
+- `docs/monitoring.md`
+- `docs/ci-cd.md`
 
-# watch mode
-$ npm run start:dev
+---
 
-# production mode
-$ npm run start:prod
+## CI/CD Pipeline
+
+```mermaid
+flowchart LR
+
+    Dev[Developer Push] --> Github[GitHub Repository]
+
+    Github --> CI[GitHub Actions CI]
+
+    CI --> Lint[Lint]
+    Lint --> Build[Build Docker Image]
+    Build --> Push[Push Image to GHCR]
+
+    Push --> CD[GitHub Actions CD]
+
+    CD --> SSH[SSH to EC2]
+
+    SSH --> Pull[docker compose pull backend]
+    Pull --> Deploy[docker compose up -d backend]
 ```
 
-## Run tests
+---
 
-```bash
-# unit tests
-$ npm run test
+## Monitoring Stack
 
-# e2e tests
-$ npm run test:e2e
+The platform includes full observability support.
 
-# test coverage
-$ npm run test:cov
+### Metrics
+
+- HTTP request count
+- HTTP request duration
+- CPU usage
+- Memory usage
+- Event loop lag
+- Container metrics
+
+### Logs
+
 ```
+Backend -> Alloy -> Loki -> Grafana
+```
+
+### Traces
+
+```
+Backend -> OpenTelemetry -> Tempo -> Grafana
+```
+
+---
 
 ## Deployment
 
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+Infrastructure provisioning:
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+terraform init
+terraform apply
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Configuration management:
 
-## Resources
+```bash
+ansible-playbook playbook.yml
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+Application deployment:
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+git push origin main
+```
 
-## Support
+Deployment is performed automatically using GitHub Actions.
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+---
 
-## Stay in touch
+## Local Development
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+git clone <repository>
+cd backend
+
+npm install
+
+cp .env.example .env
+
+docker compose up -d
+
+npm run start:dev
+```
+
+---
+
+## Project Structure
+
+```text
+backend/
+frontend/
+infra/
+monitoring/
+docs/
+```
+
+---
+
+## Screenshots
+
+### Homepage
+
+<!-- Add screenshot -->
+
+### Employer Dashboard
+
+<!-- Add screenshot -->
+
+### Grafana Dashboard
+
+<!-- Add screenshot -->
+
+---
+
+## Documentation
+
+- `docs/architecture.md`
+- `docs/deployment.md`
+- `docs/monitoring.md`
+- `docs/ci-cd.md`
+- `docs/local-development.md`
+
+---
+
+## Future Improvements
+
+- WebSocket notifications
+- Resume analyzer
+- AI-powered recommendations
+- Kubernetes deployment
+- Blue-Green deployments
+- Horizontal scaling
+
+---
 
 ## License
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
-# jobseeker-backend-nestjs
+MIT License
