@@ -8,7 +8,6 @@ import { Connection } from 'mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 
 export async function createTestingApp() {
-
   const mongo = await MongoMemoryServer.create();
 
   process.env.DATABASE_URL = mongo.getUri();
@@ -19,15 +18,16 @@ export async function createTestingApp() {
 
   const app = moduleRef.createNestApplication();
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    transform: true,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      transform: true,
+    }),
+  );
 
   await app.init();
 
-  const connection =
-    app.get<Connection>(getConnectionToken());
+  const connection = app.get<Connection>(getConnectionToken());
 
   return {
     app,

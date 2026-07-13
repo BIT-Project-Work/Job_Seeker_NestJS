@@ -7,7 +7,6 @@ export type AnalyticsDocument = Document & Analytics;
 
 @Schema({ timestamps: true })
 export class Analytics {
-  
   @ApiProperty({ type: String, description: 'Employer User ID' })
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
   employer!: Types.ObjectId;
@@ -35,4 +34,3 @@ export const AnalyticsSchema = SchemaFactory.createForClass(Analytics);
 
 AnalyticsSchema.index({ employer: 1 });
 AnalyticsSchema.index({ employer: 1, createdAt: -1 });
-

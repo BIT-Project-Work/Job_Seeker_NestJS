@@ -33,7 +33,7 @@ describe('ProductsController', () => {
   });
 
   //! Find All
-  it('should return all products', async () => {
+  it('should return all products', () => {
     mockService.findAll.mockReturnValue([
       {
         id: 1,
@@ -62,7 +62,7 @@ describe('ProductsController', () => {
       name: 'Mouse',
     };
 
-    const result = controller.create(dto);
+    const result = await controller.create(dto);
 
     expect(mockService.create).toHaveBeenCalledWith(dto);
 
@@ -80,12 +80,9 @@ describe('ProductsController', () => {
       name: 'Updated',
     });
 
-    expect(mockService.update).toHaveBeenCalledWith(
-      1,
-      {
-        name: 'Updated',
-      },
-    );
+    expect(mockService.update).toHaveBeenCalledWith(1, {
+      name: 'Updated',
+    });
 
     expect(result?.name).toBe('Updated');
   });

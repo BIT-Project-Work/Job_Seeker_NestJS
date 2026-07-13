@@ -1,5 +1,9 @@
 // mail/mail.service.ts
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import * as nodemailer from 'nodemailer';
 import { Counter, Registry } from 'prom-client';
 
@@ -11,7 +15,7 @@ export class MailService {
   private transporter;
   private emailsSentCounter: Counter<string>;
   private register: Registry;
-  private readonly logger = new Logger(MailService.name)
+  private readonly logger = new Logger(MailService.name);
 
   constructor() {
     this.transporter = nodemailer.createTransport({

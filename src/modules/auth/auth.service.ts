@@ -30,7 +30,7 @@ export class AuthService {
     @InjectModel(User.name) private UserModel: Model<User>,
     private jwtService: JwtService,
     private usersService: UsersService,
-  ) { }
+  ) {}
 
   private generateToken = (userId: string): string => {
     return this.jwtService.sign(
@@ -42,7 +42,6 @@ export class AuthService {
       },
     );
   };
-
 
   //? Response for registration
   private buildResponse(user: any) {
@@ -107,5 +106,4 @@ export class AuthService {
 
     return this.buildResponse(user);
   }
-
 }

@@ -1,16 +1,16 @@
 import { context, trace } from '@opentelemetry/api';
 
 export function getTraceContext() {
-    const span = trace.getSpan(context.active());
+  const span = trace.getSpan(context.active());
 
-    if (!span) {
-        return {};
-    }
+  if (!span) {
+    return {};
+  }
 
-    const spanContext = span.spanContext();
+  const spanContext = span.spanContext();
 
-    return {
-        traceId: spanContext.traceId,
-        spanId: spanContext.spanId,
-    };
+  return {
+    traceId: spanContext.traceId,
+    spanId: spanContext.spanId,
+  };
 }

@@ -1,61 +1,49 @@
 import { CloudinaryStorage } from 'multer-storage-cloudinary';
 import cloudinary from './cloudinary.config';
-import { randomUUID } from 'crypto';
 
-export const avatarStorage =
-    new CloudinaryStorage({
-        cloudinary,
+export const avatarStorage = new CloudinaryStorage({
+  cloudinary,
 
-        params: async (req: any) => ({
-            folder: 'jobseeker/avatars',
+  params: (req: any) => ({
+    folder: 'jobseeker/avatars',
 
-            allowed_formats: [
-                'jpg',
-                'jpeg',
-                'png',
-            ],
+    allowed_formats: ['jpg', 'jpeg', 'png'],
 
-            public_id: `${req.user.name}-avatar`,
+    public_id: `${req.user.name}-avatar`,
 
-            overwrite: true,
-            invalidate: true,
-        }),
-    });
+    overwrite: true,
+    invalidate: true,
+  }),
+});
 
-export const companyLogosStorage =
-    new CloudinaryStorage({
-        cloudinary,
+export const companyLogosStorage = new CloudinaryStorage({
+  cloudinary,
 
-        params: async (req: any) => ({
-            folder: 'jobseeker/companyLogos',
+  params: (req: any) => ({
+    folder: 'jobseeker/companyLogos',
 
-            allowed_formats: [
-                'jpg',
-                'jpeg',
-                'png',
-            ],
+    allowed_formats: ['jpg', 'jpeg', 'png'],
 
-            public_id: `${req.user.name}-company-logo`,
+    public_id: `${req.user.name}-company-logo`,
 
-            overwrite: true,
-            invalidate: true,
-        }),
-    });
+    overwrite: true,
+    invalidate: true,
+  }),
+});
 
-export const resumeStorage =
-    new CloudinaryStorage({
-        cloudinary,
+export const resumeStorage = new CloudinaryStorage({
+  cloudinary,
 
-        params: async (req: any) => ({
-            folder: 'jobseeker/resumes',
+  params: (req: any) => ({
+    folder: 'jobseeker/resumes',
 
-            resource_type: 'raw',
+    resource_type: 'raw',
 
-            allowed_formats: ['pdf'],
+    allowed_formats: ['pdf'],
 
-            public_id: `${req.user.name}-resume`,
+    public_id: `${req.user.name}-resume`,
 
-            overwrite: true,
-            invalidate: true,
-        }),
-    });
+    overwrite: true,
+    invalidate: true,
+  }),
+});

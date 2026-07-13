@@ -2,9 +2,9 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 import {
-    ForbiddenException,
-    INestApplication,
-    NotFoundException,
+  ForbiddenException,
+  INestApplication,
+  NotFoundException,
 } from '@nestjs/common';
 import { TestingModule } from '@nestjs/testing';
 import { getModelToken } from '@nestjs/mongoose';
@@ -18,269 +18,235 @@ import { Role } from '../../src/common/enums/role';
 
 import { createIntegrationApp } from '../helpers/integration-app';
 
-import {
-    clearDatabase,
-    closeDatabase,
-} from '../helpers/database';
+import { clearDatabase, closeDatabase } from '../helpers/database';
 
 import { disconnectMongo } from '../helpers/mongodb-memory';
 import { getConnectionToken } from '@nestjs/mongoose';
 import { Connection } from 'mongoose';
 
 import {
-    createEmployer,
-    createJobSeeker,
+  createEmployer,
+  createJobSeeker,
 } from '../helpers/factories/user.factory';
 
 describe('Users Integration', () => {
-    let app: INestApplication;
+  let app: INestApplication;
 
-    let module: TestingModule;
+  let module: TestingModule;
 
-    let service: UsersService;
-    let connection: Connection;
+  let service: UsersService;
+  let connection: Connection;
 
-    let userModel;
+  let userModel;
 
-    beforeAll(async () => {
-        ({ app, module } = await createIntegrationApp([
-            UsersModule,
-        ]));
+  beforeAll(async () => {
+    ({ app, module } = await createIntegrationApp([UsersModule]));
 
-        connection = module.get<Connection>(getConnectionToken());
+    connection = module.get<Connection>(getConnectionToken());
 
-        service = module.get(UsersService);
+    service = module.get(UsersService);
 
-        userModel = module.get(getModelToken(User.name));
+    userModel = module.get(getModelToken(User.name));
+  });
+
+  afterEach(async () => {
+    jest.restoreAllMocks();
+
+    await clearDatabase(connection);
+  });
+
+  afterAll(async () => {
+    await app.close();
+
+    await closeDatabase(connection);
+
+    await disconnectMongo();
+  });
+
+  describe('create()', () => {
+    it('should create a user', async () => {
+      const user = await service.create({
+        name: 'John',
+        email: 'john@test.com',
+        password: 'password',
+        role: Role.JOBSEEKER,
+      });
+
+      expect(user).toBeDefined();
+
+      const dbUser = await userModel.findOne({
+        email: 'john@test.com',
+      });
+
+      expect(dbUser).not.toBeNull();
+
+      expect(dbUser.name).toBe('John');
+    });
+  });
+
+  describe('findAll()', () => {
+    it('should return empty array', async () => {
+      const users = await service.findAll();
+
+      expect(users).toEqual([]);
     });
 
-    afterEach(async () => {
-        jest.restoreAllMocks();
+    it('should return all users', async () => {
+      await createEmployer(userModel);
 
-        await clearDatabase(connection);
+      await createJobSeeker(userModel);
+
+      const users = await service.findAll();
+
+      expect(users).toHaveLength(2);
+    });
+  });
+
+  describe('findByEmail()', () => {
+    it('should find user by email', async () => {
+      const created = await createJobSeeker(userModel);
+      const user = await service.findByEmail(created.email);
+
+      expect(user).not.toBeNull();
+
+      expect(user!.email).toBe(created.email);
+      expect(user!.name).toBe(created.name);
     });
 
-    afterAll(async () => {
-        await app.close();
+    it('should return null', async () => {
+      const user = await service.findByEmail('unknown@test.com');
 
-        await closeDatabase(connection);
+      expect(user).toBeNull();
+    });
+  });
 
-        await disconnectMongo();
+  describe('findOne()', () => {
+    it('should find user', async () => {
+      const created = await createJobSeeker(userModel);
+
+      const user = await service.findOne(created._id.toString());
+
+      expect(user).not.toBeNull();
+      expect(user?._id.toString()).toBe(created._id.toString());
     });
 
-    describe('create()', () => {
-        it('should create a user', async () => {
-            const user = await service.create({
-                name: 'John',
-                email: 'john@test.com',
-                password: 'password',
-                role: Role.JOBSEEKER,
-            });
+    it('should return null for invalid id', async () => {
+      const user = await service.findOne('685fc37ea26ebc75c37b9f31');
 
-            expect(user).toBeDefined();
+      expect(user).toBeNull();
+    });
+  });
 
-            const dbUser = await userModel.findOne({
-                email: 'john@test.com',
-            });
+  describe('updateProfile()', () => {
+    it('should update jobseeker profile', async () => {
+      const user = await createJobSeeker(userModel);
 
-            expect(dbUser).not.toBeNull();
+      const result = await service.updateProfie(user._id.toString(), {
+        name: 'Updated',
+        avatar: 'avatar.jpg',
+        resume: 'resume.pdf',
+      });
 
-            expect(dbUser.name).toBe('John');
-        });
+      expect(result.name).toBe('Updated');
     });
 
-    describe('findAll()', () => {
-        it('should return empty array', async () => {
-            const users = await service.findAll();
+    it('should update employer profile', async () => {
+      const employer = await createEmployer(userModel);
 
-            expect(users).toEqual([]);
-        });
+      const result = await service.updateProfie(employer._id.toString(), {
+        companyName: 'OpenAI',
 
-        it('should return all users', async () => {
-            await createEmployer(userModel);
+        companyDescription: 'AI Company',
 
-            await createJobSeeker(userModel);
+        companyLogo: 'logo.png',
+      });
 
-            const users = await service.findAll();
+      expect(result.companyName).toBe('OpenAI');
 
-            expect(users).toHaveLength(2);
-        });
+      expect(result.companyLogo).toBe('logo.png');
     });
 
-    describe('findByEmail()', () => {
-        it('should find user by email', async () => {
-            const created = await createJobSeeker(userModel);
-            const user = await service.findByEmail(created.email);
+    it('should throw if user not found', async () => {
+      await expect(
+        service.updateProfie('685fc37ea26ebc75c37b9f31', {}),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
 
-            expect(user).not.toBeNull();
+  describe('deleteResume()', () => {
+    const uploadsDir = path.join(process.cwd(), 'uploads');
 
-            expect(user!.email).toBe(created.email);
-            expect(user!.name).toBe(created.name);
-        });
-
-        it('should return null', async () => {
-            const user = await service.findByEmail(
-                'unknown@test.com',
-            );
-
-            expect(user).toBeNull();
-        });
+    beforeEach(() => {
+      if (!fs.existsSync(uploadsDir)) {
+        fs.mkdirSync(uploadsDir, { recursive: true });
+      }
     });
 
-    describe('findOne()', () => {
-        it('should find user', async () => {
-            const created = await createJobSeeker(userModel);
+    afterEach(() => {
+      const filePath = path.join(uploadsDir, 'resume.pdf');
 
-            const user = await service.findOne(created._id.toString());
-
-            expect(user).not.toBeNull();
-            expect(user?._id.toString()).toBe(created._id.toString());
-        });
-
-        it('should return null for invalid id', async () => {
-            const user = await service.findOne(
-                '685fc37ea26ebc75c37b9f31',
-            );
-
-            expect(user).toBeNull();
-        });
+      if (fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+      }
     });
 
-    describe('updateProfile()', () => {
-        it('should update jobseeker profile', async () => {
-            const user = await createJobSeeker(userModel);
+    it('should delete resume', async () => {
+      const user = await createJobSeeker(userModel);
 
-            const result = await service.updateProfie(
-                user._id.toString(),
-                {
-                    name: 'Updated',
-                    avatar: 'avatar.jpg',
-                    resume: 'resume.pdf',
-                },
-            );
+      const fileName = 'resume.pdf';
+      const filePath = path.join(uploadsDir, fileName);
 
-            expect(result.name).toBe('Updated');
-        });
+      // create a real file
+      fs.writeFileSync(filePath, 'dummy resume');
 
-        it('should update employer profile', async () => {
-            const employer = await createEmployer(userModel);
+      user.resume = `http://localhost/uploads/${fileName}`;
+      await user.save();
 
-            const result = await service.updateProfie(
-                employer._id.toString(),
-                {
-                    companyName: 'OpenAI',
+      const result = await service.deleteResume(user._id.toString(), {
+        resumeUrl: user.resume,
+      });
 
-                    companyDescription: 'AI Company',
+      expect(result.message).toBe('Resume deleted successfully');
 
-                    companyLogo: 'logo.png',
-                },
-            );
+      expect(fs.existsSync(filePath)).toBe(false);
 
-            expect(result.companyName).toBe('OpenAI');
+      const updated = await userModel.findById(user._id);
 
-            expect(result.companyLogo).toBe('logo.png');
-        });
-
-        it('should throw if user not found', async () => {
-            await expect(
-                service.updateProfie(
-                    '685fc37ea26ebc75c37b9f31',
-                    {},
-                ),
-            ).rejects.toThrow(NotFoundException);
-        });
+      expect(updated.resume).toBe('');
     });
 
-    describe('deleteResume()', () => {
-        const uploadsDir = path.join(process.cwd(), 'uploads');
+    it('should throw if employer deletes resume', async () => {
+      const employer = await createEmployer(userModel);
 
-        beforeEach(() => {
-            if (!fs.existsSync(uploadsDir)) {
-                fs.mkdirSync(uploadsDir, { recursive: true });
-            }
-        });
-
-        afterEach(() => {
-            const filePath = path.join(uploadsDir, 'resume.pdf');
-
-            if (fs.existsSync(filePath)) {
-                fs.unlinkSync(filePath);
-            }
-        });
-
-        it('should delete resume', async () => {
-            const user = await createJobSeeker(userModel);
-
-            const fileName = 'resume.pdf';
-            const filePath = path.join(uploadsDir, fileName);
-
-            // create a real file
-            fs.writeFileSync(filePath, 'dummy resume');
-
-            user.resume = `http://localhost/uploads/${fileName}`;
-            await user.save();
-
-            const result = await service.deleteResume(
-                user._id.toString(),
-                {
-                    resumeUrl: user.resume,
-                },
-            );
-
-            expect(result.message).toBe(
-                'Resume deleted successfully',
-            );
-
-            expect(fs.existsSync(filePath)).toBe(false);
-
-            const updated = await userModel.findById(user._id);
-
-            expect(updated.resume).toBe('');
-        });
-
-        it('should throw if employer deletes resume', async () => {
-            const employer = await createEmployer(userModel);
-
-            await expect(
-                service.deleteResume(
-                    employer._id.toString(),
-                    {
-                        resumeUrl: 'resume.pdf',
-                    },
-                ),
-            ).rejects.toThrow(ForbiddenException);
-        });
-
-        it('should throw if user not found', async () => {
-            await expect(
-                service.deleteResume(
-                    '685fc37ea26ebc75c37b9f31',
-                    {
-                        resumeUrl: 'resume.pdf',
-                    },
-                ),
-            ).rejects.toThrow(NotFoundException);
-        });
+      await expect(
+        service.deleteResume(employer._id.toString(), {
+          resumeUrl: 'resume.pdf',
+        }),
+      ).rejects.toThrow(ForbiddenException);
     });
 
-    describe('getPublicProfile()', () => {
-        it('should return public profile', async () => {
-            const user = await createJobSeeker(userModel);
+    it('should throw if user not found', async () => {
+      await expect(
+        service.deleteResume('685fc37ea26ebc75c37b9f31', {
+          resumeUrl: 'resume.pdf',
+        }),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
 
-            const profile = await service.getPublicProfile(
-                user._id.toString(),
-            );
+  describe('getPublicProfile()', () => {
+    it('should return public profile', async () => {
+      const user = await createJobSeeker(userModel);
 
-            expect(profile.email).toBe(user.email);
-        });
+      const profile = await service.getPublicProfile(user._id.toString());
 
-        it('should throw if user not found', async () => {
-            await expect(
-                service.getPublicProfile(
-                    '685fc37ea26ebc75c37b9f31',
-                ),
-            ).rejects.toThrow(NotFoundException);
-        });
+      expect(profile.email).toBe(user.email);
     });
 
+    it('should throw if user not found', async () => {
+      await expect(
+        service.getPublicProfile('685fc37ea26ebc75c37b9f31'),
+      ).rejects.toThrow(NotFoundException);
+    });
+  });
 });

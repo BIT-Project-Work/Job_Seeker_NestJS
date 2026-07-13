@@ -1,8 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import {
-  ForbiddenException,
-  NotFoundException,
-} from '@nestjs/common';
+import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
 import * as fs from 'fs';
@@ -186,7 +183,7 @@ describe('UsersService', () => {
   describe('deleteResume', () => {
     beforeEach(() => {
       (fs.existsSync as jest.Mock).mockReturnValue(true);
-      (fs.unlinkSync as jest.Mock).mockImplementation(() => { });
+      (fs.unlinkSync as jest.Mock).mockImplementation(() => {});
     });
 
     afterEach(() => {
@@ -242,9 +239,7 @@ describe('UsersService', () => {
 
   describe('remove', () => {
     it('should return remove message', () => {
-      expect(service.remove('1')).toEqual(
-        'This action removes a #1 user',
-      );
+      expect(service.remove('1')).toEqual('This action removes a #1 user');
     });
   });
 
@@ -256,9 +251,9 @@ describe('UsersService', () => {
         }),
       });
 
-      await expect(
-        service.getPublicProfile('id'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.getPublicProfile('id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should return public profile', async () => {
@@ -281,9 +276,7 @@ describe('UsersService', () => {
         }),
       });
 
-      const result = await service.getPublicProfile(
-        user._id.toString(),
-      );
+      const result = await service.getPublicProfile(user._id.toString());
 
       expect(result.name).toBe(user.name);
       expect(result.email).toBe(user.email);

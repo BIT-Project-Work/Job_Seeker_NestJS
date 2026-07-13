@@ -36,7 +36,7 @@ import { Role } from '../../common/enums/role';
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ApplicationsController {
   //! DI
-  constructor(private readonly applicationsService: ApplicationsService) { }
+  constructor(private readonly applicationsService: ApplicationsService) {}
 
   /**
    *! Apply to a Job

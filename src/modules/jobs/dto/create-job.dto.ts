@@ -15,9 +15,7 @@ import {
 } from 'class-validator';
 import { JobType } from '../../../common/enums/jobType';
 
-export function IsSalaryRangeValid(
-  validationOptions?: ValidationOptions,
-) {
+export function IsSalaryRangeValid(validationOptions?: ValidationOptions) {
   return function (object: object, propertyName: string) {
     registerDecorator({
       name: 'isSalaryRangeValid',
@@ -28,10 +26,7 @@ export function IsSalaryRangeValid(
         validate(value: number, args: ValidationArguments) {
           const dto = args.object as any;
 
-          if (
-            dto.salaryMin == null ||
-            value == null
-          ) {
+          if (dto.salaryMin == null || value == null) {
             return true;
           }
 
@@ -92,8 +87,7 @@ export class CreateJobDto {
   @Min(0)
   @IsOptional()
   @IsSalaryRangeValid({
-    message:
-      'salaryMax must be greater than or equal to salaryMin',
+    message: 'salaryMax must be greater than or equal to salaryMin',
   })
   salaryMax?: number;
 

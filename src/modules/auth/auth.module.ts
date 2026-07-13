@@ -15,7 +15,6 @@ import { AuthV2Controller } from './authv2.controller';
 import { AuthV2Service } from './authv2.service';
 import { AppLoggerModule } from '../../common/logger/logger.module';
 
-
 @Module({
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -40,9 +39,9 @@ import { AppLoggerModule } from '../../common/logger/logger.module';
     ]),
     UsersModule,
     MailModule,
-    AppLoggerModule
+    AppLoggerModule,
   ],
   controllers: [AuthController, AuthV2Controller],
   providers: [AuthService, AuthV2Service, JwtStrategy, RefreshTokenStrategy],
 })
-export class AuthModule { }
+export class AuthModule {}

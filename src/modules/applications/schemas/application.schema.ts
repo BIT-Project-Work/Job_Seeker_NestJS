@@ -26,7 +26,11 @@ export class Application {
   resume?: string;
 
   @ApiProperty({ enum: ApplicationStatus, default: ApplicationStatus.APPLIED })
-  @Prop({ enum: ApplicationStatus, default: ApplicationStatus.APPLIED, type: String })
+  @Prop({
+    enum: ApplicationStatus,
+    default: ApplicationStatus.APPLIED,
+    type: String,
+  })
   status!: ApplicationStatus;
 
   @ApiProperty()

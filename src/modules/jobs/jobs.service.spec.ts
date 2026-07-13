@@ -4,7 +4,6 @@ import { getModelToken } from '@nestjs/mongoose';
 import { ForbiddenException, NotFoundException } from '@nestjs/common';
 import { Types } from 'mongoose';
 
-
 describe('JobsService', () => {
   let service: JobsService;
 
@@ -24,7 +23,6 @@ describe('JobsService', () => {
     find: jest.fn(),
   };
 
-
   beforeEach(async () => {
     jest.clearAllMocks();
 
@@ -33,7 +31,10 @@ describe('JobsService', () => {
         JobsService,
         { provide: getModelToken('Job'), useValue: mockJobModel },
         { provide: getModelToken('SavedJob'), useValue: mockSavedJobModel },
-        { provide: getModelToken('Application'), useValue: mockApplicationModel },
+        {
+          provide: getModelToken('Application'),
+          useValue: mockApplicationModel,
+        },
       ],
     }).compile();
 
@@ -42,7 +43,7 @@ describe('JobsService', () => {
 
   //! Test Job Creation (EMPLOYER)
   it('should create job if user is employer', async () => {
-    const dto = { title: "Backend Developer" };
+    const dto = { title: 'Backend Developer' };
     const user = { _id: '123', role: 'EMPLOYER' };
 
     mockJobModel.create.mockResolvedValue({ ...dto, company: '123' });
@@ -62,9 +63,9 @@ describe('JobsService', () => {
     const dto = { title: 'Backend Developer' };
     const user = { _id: '123', role: 'JOBSEEKER' };
 
-    await expect(service.create(dto as any, user))
-      .rejects
-      .toThrow(ForbiddenException);
+    await expect(service.create(dto as any, user)).rejects.toThrow(
+      ForbiddenException,
+    );
   });
 
   //! 404 if no job found by id
@@ -73,9 +74,7 @@ describe('JobsService', () => {
       populate: jest.fn().mockResolvedValue(null),
     });
 
-    await expect(service.findOne('abc'))
-      .rejects
-      .toThrow(NotFoundException);
+    await expect(service.findOne('abc')).rejects.toThrow(NotFoundException);
   });
 
   //! Job Found with Application Status
@@ -108,9 +107,9 @@ describe('JobsService', () => {
 
     const user = { _id: new Types.ObjectId() };
 
-    await expect(
-      service.update('id', {}, user),
-    ).rejects.toThrow(ForbiddenException);
+    await expect(service.update('id', {}, user)).rejects.toThrow(
+      ForbiddenException,
+    );
   });
 
   mockJobModel.find.mockReturnValue({
@@ -129,15 +128,11 @@ describe('JobsService', () => {
     });
 
     mockSavedJobModel.find.mockReturnValue({
-      select: jest.fn().mockResolvedValue([
-        { job: jobId },
-      ]),
+      select: jest.fn().mockResolvedValue([{ job: jobId }]),
     });
 
     mockApplicationModel.find.mockReturnValue({
-      select: jest.fn().mockResolvedValue([
-        { job: jobId, status: 'ACCEPTED' },
-      ]),
+      select: jest.fn().mockResolvedValue([{ job: jobId, status: 'ACCEPTED' }]),
     });
 
     const result = await service.findAll({
@@ -224,9 +219,7 @@ describe('JobsService', () => {
 
     //! With userId (saved + applied jobs)
     it('should mark saved jobs and application status', async () => {
-      const jobs = [
-        { _id: jobId, title: 'Dev' },
-      ];
+      const jobs = [{ _id: jobId, title: 'Dev' }];
 
       mockJobModel.find.mockReturnValue({
         populate: jest.fn().mockReturnValue({
@@ -236,9 +229,7 @@ describe('JobsService', () => {
 
       // saved jobs
       mockSavedJobModel.find.mockReturnValue({
-        select: jest.fn().mockResolvedValue([
-          { job: jobId },
-        ]),
+        select: jest.fn().mockResolvedValue([{ job: jobId }]),
       });
 
       // applications
@@ -259,7 +250,6 @@ describe('JobsService', () => {
       expect(result[0].applicationStatus).toBe('PENDING');
     });
   });
-
 
   //! Find Jobs without filters
   describe('findJobsWithoutFilters', () => {
@@ -286,9 +276,7 @@ describe('JobsService', () => {
     });
 
     it('should return employer jobs with application count', async () => {
-      const jobs = [
-        { _id: new Types.ObjectId(), title: 'Dev' },
-      ];
+      const jobs = [{ _id: new Types.ObjectId(), title: 'Dev' }];
 
       const populateMock = jest.fn().mockReturnValue({
         lean: jest.fn().mockResolvedValue(jobs),
@@ -388,11 +376,9 @@ describe('JobsService', () => {
         save: saveMock,
       });
 
-      const result = await service.update(
-        jobId,
-        { title: 'Updated' } as any,
-        { _id: { toString: () => '123' } },
-      );
+      const result = await service.update(jobId, { title: 'Updated' } as any, {
+        _id: { toString: () => '123' },
+      });
 
       expect(saveMock).toHaveBeenCalled();
       expect(result.title).toBe('Updated');

@@ -47,14 +47,8 @@ export class JobsService {
 
   //! Find All Jobs Ko Values haru
   private buildJobQuery(queryDto: JobQueryDto) {
-    const {
-      keyword,
-      location,
-      category,
-      type,
-      minSalary,
-      maxSalary,
-    } = queryDto;
+    const { keyword, location, category, type, minSalary, maxSalary } =
+      queryDto;
 
     const query: any = {
       isClosed: false,
@@ -108,10 +102,7 @@ export class JobsService {
   private async getJobs(query: any) {
     return this.jobModel
       .find(query)
-      .populate(
-        'company',
-        'name companyName companyLogo',
-      )
+      .populate('company', 'name companyName companyLogo')
       .lean();
   }
 
@@ -126,44 +117,32 @@ export class JobsService {
 
     const uid = new Types.ObjectId(userId);
 
-    const user = await this.userModel
-      .findById(uid)
-      .lean();
+    const user = await this.userModel.findById(uid).lean();
 
     if (!user) {
-      throw new NotFoundException(
-        'User not found',
-      );
+      throw new NotFoundException('User not found');
     }
 
-    const [savedJobs, applications] =
-      await Promise.all([
-        this.savedJobModel
-          .find({
-            jobseeker: uid,
-          })
-          .select('job'),
+    const [savedJobs, applications] = await Promise.all([
+      this.savedJobModel
+        .find({
+          jobseeker: uid,
+        })
+        .select('job'),
 
-        this.appModel
-          .find({
-            applicant: uid,
-          })
-          .select('job status'),
-      ]);
+      this.appModel
+        .find({
+          applicant: uid,
+        })
+        .select('job status'),
+    ]);
 
-    const savedIdSet = new Set(
-      savedJobs.map((job) =>
-        job.job.toString(),
-      ),
-    );
+    const savedIdSet = new Set(savedJobs.map((job) => job.job.toString()));
 
-    const appliedMap: Record<string, string> =
-      {};
+    const appliedMap: Record<string, string> = {};
 
     applications.forEach((application) => {
-      appliedMap[
-        application.job.toString()
-      ] = application.status;
+      appliedMap[application.job.toString()] = application.status;
     });
 
     return {
@@ -183,10 +162,7 @@ export class JobsService {
       const id = job._id.toString();
 
       const recommendationScore = user
-        ? calculateRecommendationScore(
-          user,
-          job,
-        )
+        ? calculateRecommendationScore(user, job)
         : 0;
 
       return {
@@ -194,33 +170,22 @@ export class JobsService {
 
         isSaved: savedIdSet.has(id),
 
-        applicationStatus:
-          appliedMap[id] ?? null,
+        applicationStatus: appliedMap[id] ?? null,
 
         recommendationScore,
 
-        isRecommended:
-          recommendationScore >= 0.4,
+        isRecommended: recommendationScore >= 0.4,
       };
     });
   }
 
   private sortJobs(jobs: any[]) {
     return jobs.sort((a, b) => {
-      if (
-        a.isRecommended !==
-        b.isRecommended
-      ) {
-        return (
-          Number(b.isRecommended) -
-          Number(a.isRecommended)
-        );
+      if (a.isRecommended !== b.isRecommended) {
+        return Number(b.isRecommended) - Number(a.isRecommended);
       }
 
-      return (
-        b.recommendationScore -
-        a.recommendationScore
-      );
+      return b.recommendationScore - a.recommendationScore;
     });
   }
 
@@ -234,7 +199,7 @@ export class JobsService {
 
     const job = await this.jobModel.create({
       ...createJobDto,
-      company: user._id
+      company: user._id,
     });
     this.logger.info(
       {
@@ -262,29 +227,17 @@ export class JobsService {
 
     const total = jobs.length;
 
-    const {
-      user,
-      savedIdSet,
-      appliedMap,
-    } = await this.getUserContext(queryDto.userId);
-
-    const enrichedJobs = this.enrichJobs(
-      jobs,
-      user,
-      savedIdSet,
-      appliedMap,
+    const { user, savedIdSet, appliedMap } = await this.getUserContext(
+      queryDto.userId,
     );
+
+    const enrichedJobs = this.enrichJobs(jobs, user, savedIdSet, appliedMap);
 
     const sortedJobs = this.sortJobs(enrichedJobs);
 
-    const startIndex =
-      (page - 1) * limit;
+    const startIndex = (page - 1) * limit;
 
-    const paginatedJobs =
-      sortedJobs.slice(
-        startIndex,
-        startIndex + limit,
-      );
+    const paginatedJobs = sortedJobs.slice(startIndex, startIndex + limit);
 
     return {
       jobs: paginatedJobs,
@@ -295,7 +248,7 @@ export class JobsService {
         totalPages: Math.ceil(total / limit),
         hasNextPage: page * limit < total,
       },
-    }
+    };
   }
 
   /**
@@ -307,81 +260,58 @@ export class JobsService {
       async () => {
         return this.jobModel
           .find({ isClosed: false })
-          .populate(
-            'company',
-            'name companyName companyLogo',
-          )
+          .populate('company', 'name companyName companyLogo')
           .lean();
       },
       CacheTTL.FIVE_MINUTES,
     );
   }
 
-
   /**
    *! Employer Jobs
    */
   async findEmployerJobs(user: any) {
     if (user.role !== 'EMPLOYER') {
-      throw new ForbiddenException(
-        'Access denied',
-      );
+      throw new ForbiddenException('Access denied');
     }
 
     return this.redisService.remember(
-      CacheKeys.employerJobs(
-        user._id.toString(),
-      ),
+      CacheKeys.employerJobs(user._id.toString()),
       async () => {
         const jobs = await this.jobModel
           .find({
             company: user._id,
           })
-          .populate(
-            'company',
-            'name companyName companyLogo',
-          )
+          .populate('company', 'name companyName companyLogo')
           .lean();
 
-        const jobIds = jobs.map(
-          (job) => job._id,
+        const jobIds = jobs.map((job) => job._id);
+
+        const applicationCounts = await this.appModel.aggregate([
+          {
+            $match: {
+              job: {
+                $in: jobIds,
+              },
+            },
+          },
+          {
+            $group: {
+              _id: '$job',
+              count: {
+                $sum: 1,
+              },
+            },
+          },
+        ]);
+
+        const applicationCountMap = new Map(
+          applicationCounts.map((item) => [item._id.toString(), item.count]),
         );
-
-        const applicationCounts =
-          await this.appModel.aggregate([
-            {
-              $match: {
-                job: {
-                  $in: jobIds,
-                },
-              },
-            },
-            {
-              $group: {
-                _id: '$job',
-                count: {
-                  $sum: 1,
-                },
-              },
-            },
-          ]);
-
-        const applicationCountMap =
-          new Map(
-            applicationCounts.map(
-              (item) => [
-                item._id.toString(),
-                item.count,
-              ],
-            ),
-          );
 
         return jobs.map((job) => ({
           ...job,
-          applicationCount:
-            applicationCountMap.get(
-              job._id.toString(),
-            ) ?? 0,
+          applicationCount: applicationCountMap.get(job._id.toString()) ?? 0,
         }));
       },
       CacheTTL.FIVE_MINUTES,
@@ -397,16 +327,11 @@ export class JobsService {
       async () => {
         const job = await this.jobModel
           .findById(id)
-          .populate(
-            'company',
-            'name companyName companyLogo',
-          )
+          .populate('company', 'name companyName companyLogo')
           .lean();
 
         if (!job) {
-          throw new NotFoundException(
-            'Job not found',
-          );
+          throw new NotFoundException('Job not found');
         }
 
         return job;
@@ -414,8 +339,7 @@ export class JobsService {
       CacheTTL.FIVE_MINUTES,
     );
 
-    let applicationStatus: ApplicationStatus | null =
-      null;
+    let applicationStatus: ApplicationStatus | null = null;
 
     if (userId && Types.ObjectId.isValid(userId)) {
       const app = await this.appModel.findOne({
@@ -494,7 +418,6 @@ export class JobsService {
       user._id.toString(),
     );
 
-
     return { message: 'Job status updated' };
   }
 
@@ -503,44 +426,26 @@ export class JobsService {
     return this.redisService.remember(
       CacheKeys.recommendations(userId),
       async () => {
-        const user = await this.userModel
-          .findById(userId)
-          .lean();
+        const user = await this.userModel.findById(userId).lean();
 
         if (!user) {
-          throw new NotFoundException(
-            'User not found',
-          );
+          throw new NotFoundException('User not found');
         }
 
         const jobs = await this.jobModel
           .find({
             isClosed: false,
           })
-          .populate(
-            'company',
-            'name companyName companyLogo',
-          )
+          .populate('company', 'name companyName companyLogo')
           .lean();
 
         return jobs
           .map((job) => ({
             ...job,
-            recommendationScore:
-              calculateRecommendationScore(
-                user,
-                job,
-              ),
+            recommendationScore: calculateRecommendationScore(user, job),
           }))
-          .filter(
-            (job) =>
-              job.recommendationScore >= 0.4,
-          )
-          .sort(
-            (a, b) =>
-              b.recommendationScore -
-              a.recommendationScore,
-          );
+          .filter((job) => job.recommendationScore >= 0.4)
+          .sort((a, b) => b.recommendationScore - a.recommendationScore);
       },
       CacheTTL.RECOMMENDATIONS,
     );

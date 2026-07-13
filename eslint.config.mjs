@@ -37,6 +37,7 @@ export default tseslint.config(
       '@typescript-eslint/no-unsafe-call': 'warn',
       '@typescript-eslint/no-unsafe-enum-comparison': 'warn',
       '@typescript-eslint/no-unused-vars': 'warn',
+      '@typescript-eslint/unbound-method': 'off'
     },
   },
 );

@@ -1,7 +1,13 @@
 import './telemetry/instrumentation';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { INestApplication, Type, ValidationPipe, VersioningType, RequestMethod } from '@nestjs/common';
+import {
+  INestApplication,
+  Type,
+  ValidationPipe,
+  VersioningType,
+  RequestMethod,
+} from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
 import { NestExpressApplication } from '@nestjs/platform-express';
@@ -10,18 +16,19 @@ import cookieParser from 'cookie-parser';
 import { MetricsInterceptor } from './common/interceptors/metrics.interceptor';
 import { PrometheusLoggerMiddleware } from './common/middlewares/prometheus_logger/prometheus_logger.middleware';
 import { PrometheusService } from './common/prometheus/prometheus.service';
-import { DebuggedProvider, DebuggedTree, SpelunkerModule } from 'nestjs-spelunker';
+import {
+  DebuggedProvider,
+  DebuggedTree,
+  SpelunkerModule,
+} from 'nestjs-spelunker';
 import * as fs from 'fs';
 import * as os from 'os';
 import { Logger } from 'nestjs-pino';
 
 async function bootstrap() {
-  const app = await NestFactory.create<NestExpressApplication>(
-    AppModule,
-    {
-      bufferLogs: true,
-    },
-  );
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    bufferLogs: true,
+  });
 
   app.useLogger(app.get(Logger));
 
@@ -34,7 +41,7 @@ async function bootstrap() {
     prefix: '/uploads',
   });
 
-  //! Backend Versioning 
+  //! Backend Versioning
   app.setGlobalPrefix('api', {
     exclude: [
       { path: '', method: RequestMethod.GET }, // GET /
@@ -124,8 +131,7 @@ async function bootstrap() {
       .swagger-ui .info { margin: 50px 0; }
       .swagger-ui .info .title {color: #4A90E2;}
     `,
-    customCssUrl:
-      'https://unpkg.com/swagger-ui-dist/swagger-ui.css',
+    customCssUrl: 'https://unpkg.com/swagger-ui-dist/swagger-ui.css',
     customJs: [
       'https://unpkg.com/swagger-ui-dist/swagger-ui-bundle.js',
       'https://unpkg.com/swagger-ui-dist/swagger-ui-standalone-preset.js',

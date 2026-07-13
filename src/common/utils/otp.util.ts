@@ -1,14 +1,13 @@
 import * as crypto from 'crypto';
 
 export function generateOtp(): string {
-    return Math.floor(100000 + Math.random() * 900000).toString();
+  return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
 export function otpExpiry(minutes = 10): Date {
-    return new Date(Date.now() + minutes * 60 * 1000);
+  return new Date(Date.now() + minutes * 60 * 1000);
 }
 
 export function hashOtp(otp: string): string {
-    return crypto.createHash('sha256').update(otp).digest('hex');
+  return crypto.createHash('sha256').update(otp).digest('hex');
 }
-

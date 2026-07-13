@@ -1,7 +1,7 @@
 import {
-    ForbiddenException,
-    INestApplication,
-    NotFoundException,
+  ForbiddenException,
+  INestApplication,
+  NotFoundException,
 } from '@nestjs/common';
 
 import { TestingModule } from '@nestjs/testing';
@@ -26,8 +26,8 @@ import { clearDatabase, closeDatabase } from '../helpers/database';
 import { disconnectMongo } from '../helpers/mongodb-memory';
 
 import {
-    createEmployer,
-    createJobSeeker,
+  createEmployer,
+  createJobSeeker,
 } from '../helpers/factories/user.factory';
 
 import { createJob } from '../helpers/factories/job.factory';
@@ -39,268 +39,238 @@ import { UsersModule } from '../../src/modules/users/users.module';
 import { JobType } from '../../src/common/enums/jobType';
 
 describe('Jobs Integration', () => {
-    let app: INestApplication;
-    let module: TestingModule;
+  let app: INestApplication;
+  let module: TestingModule;
 
-    let service: JobsService;
+  let service: JobsService;
 
-    let connection: Connection;
+  let connection: Connection;
 
-    let jobModel;
-    let applicationModel;
-    let savedJobModel;
-    let userModel;
+  let jobModel;
+  let applicationModel;
+  let savedJobModel;
+  let userModel;
 
-    beforeAll(async () => {
-        ({ app, module } = await createIntegrationApp([
-            UsersModule,
-            JobsModule
-        ]));
+  beforeAll(async () => {
+    ({ app, module } = await createIntegrationApp([UsersModule, JobsModule]));
 
-        service = module.get(JobsService);
+    service = module.get(JobsService);
 
-        connection = module.get(getConnectionToken());
+    connection = module.get(getConnectionToken());
 
-        jobModel = module.get(getModelToken(Job.name));
+    jobModel = module.get(getModelToken(Job.name));
 
-        applicationModel = module.get(
-            getModelToken(Application.name),
-        );
+    applicationModel = module.get(getModelToken(Application.name));
 
-        savedJobModel = module.get(
-            getModelToken(SavedJob.name),
-        );
+    savedJobModel = module.get(getModelToken(SavedJob.name));
 
-        userModel = module.get(getModelToken(User.name));
+    userModel = module.get(getModelToken(User.name));
+  });
+
+  afterEach(async () => {
+    await clearDatabase(connection);
+  });
+
+  afterAll(async () => {
+    await app.close();
+
+    await closeDatabase(connection);
+
+    await disconnectMongo();
+  });
+
+  //! Create
+  describe('create()', () => {
+    it('should create a job', async () => {
+      const employer = await createEmployer(userModel);
+
+      const dto = {
+        title: 'Backend Developer',
+        description: 'NestJS',
+        location: 'Kathmandu',
+        requirements: 'NestJS,MongoDB',
+        category: 'IT',
+        type: JobType.FULL_TIME,
+        salaryMin: 50000,
+        salaryMax: 100000,
+      };
+
+      const job = await service.create(dto as any, employer);
+
+      expect(job.title).toBe(dto.title);
+
+      const dbJob = await jobModel.findById(job._id);
+
+      expect(dbJob).not.toBeNull();
     });
 
-    afterEach(async () => {
-        await clearDatabase(connection);
+    it('should throw for jobseeker', async () => {
+      const seeker = await createJobSeeker(userModel);
+
+      await expect(service.create({} as any, seeker)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+  });
+
+  //! Find All
+  describe('findAll()', () => {
+    it('should return jobs', async () => {
+      const employer = await createEmployer(userModel);
+
+      await createJob(jobModel, employer);
+
+      const jobs = await service.findAll({});
+
+      expect(jobs).toHaveLength(1);
     });
 
-    afterAll(async () => {
-        await app.close();
+    it('should filter by keyword', async () => {
+      const employer = await createEmployer(userModel);
 
-        await closeDatabase(connection);
+      await createJob(jobModel, employer, {
+        title: 'NestJS Developer',
+      });
 
-        await disconnectMongo();
+      await createJob(jobModel, employer, {
+        title: 'React Developer',
+      });
+
+      const jobs = await service.findAll({
+        keyword: 'Nest',
+      });
+
+      expect(jobs).toHaveLength(1);
+    });
+  });
+
+  //! Jobs without filter
+  describe('findJobsWithoutFilters()', () => {
+    it('should return open jobs only', async () => {
+      const employer = await createEmployer(userModel);
+
+      await createJob(jobModel, employer);
+
+      await createJob(jobModel, employer, {
+        isClosed: true,
+      });
+
+      const jobs = await service.findJobsWithoutFilters();
+
+      expect(jobs).toHaveLength(1);
+    });
+  });
+
+  //! Find Employer Jobs
+  describe('findEmployerJobs()', () => {
+    it('should return employer jobs', async () => {
+      const employer = await createEmployer(userModel);
+
+      await createJob(jobModel, employer);
+
+      const jobs = await service.findEmployerJobs(employer);
+
+      expect(jobs).toHaveLength(1);
     });
 
-    //! Create
-    describe('create()', () => {
-        it('should create a job', async () => {
-            const employer = await createEmployer(userModel);
+    it('should throw for jobseeker', async () => {
+      const seeker = await createJobSeeker(userModel);
 
-            const dto = {
-                title: 'Backend Developer',
-                description: 'NestJS',
-                location: 'Kathmandu',
-                requirements: 'NestJS,MongoDB',
-                category: 'IT',
-                type: JobType.FULL_TIME,
-                salaryMin: 50000,
-                salaryMax: 100000,
-            };
+      await expect(service.findEmployerJobs(seeker)).rejects.toThrow(
+        ForbiddenException,
+      );
+    });
+  });
 
-            const job = await service.create(dto as any, employer);
+  //! Find One
+  describe('findOne()', () => {
+    it('should return job', async () => {
+      const employer = await createEmployer(userModel);
 
-            expect(job.title).toBe(dto.title);
+      const job = await createJob(jobModel, employer);
 
-            const dbJob = await jobModel.findById(job._id);
+      const result = await service.findOne(job._id.toString());
 
-            expect(dbJob).not.toBeNull();
-        });
-
-        it('should throw for jobseeker', async () => {
-            const seeker = await createJobSeeker(userModel);
-
-            await expect(
-                service.create({} as any, seeker),
-            ).rejects.toThrow(ForbiddenException);
-        });
+      expect(result.title).toBe(job.title);
     });
 
-    //! Find All
-    describe('findAll()', () => {
-        it('should return jobs', async () => {
-            const employer = await createEmployer(userModel);
+    it('should throw if job not found', async () => {
+      await expect(service.findOne('685fc37ea26ebc75c37b9f31')).rejects.toThrow(
+        NotFoundException,
+      );
+    });
+  });
 
-            await createJob(jobModel, employer);
+  //! Update
+  describe('update()', () => {
+    it('should update job', async () => {
+      const employer = await createEmployer(userModel);
 
-            const jobs = await service.findAll({});
+      const job = await createJob(jobModel, employer);
 
-            expect(jobs).toHaveLength(1);
-        });
+      const updated = await service.update(
+        job._id.toString(),
+        {
+          title: 'Updated',
+        },
+        employer,
+      );
 
-        it('should filter by keyword', async () => {
-            const employer = await createEmployer(userModel);
-
-            await createJob(jobModel, employer, {
-                title: 'NestJS Developer',
-            });
-
-            await createJob(jobModel, employer, {
-                title: 'React Developer',
-            });
-
-            const jobs = await service.findAll({
-                keyword: 'Nest',
-            });
-
-            expect(jobs).toHaveLength(1);
-        });
+      expect(updated.title).toBe('Updated');
     });
 
-    //! Jobs without filter
-    describe('findJobsWithoutFilters()', () => {
-        it('should return open jobs only', async () => {
-            const employer = await createEmployer(userModel);
+    it('should throw if another employer updates', async () => {
+      const employer1 = await createEmployer(userModel);
 
-            await createJob(jobModel, employer);
+      const employer2 = await createEmployer(userModel);
 
-            await createJob(jobModel, employer, {
-                isClosed: true,
-            });
+      const job = await createJob(jobModel, employer1);
 
-            const jobs =
-                await service.findJobsWithoutFilters();
+      await expect(
+        service.update(job._id.toString(), {}, employer2),
+      ).rejects.toThrow(ForbiddenException);
+    });
+  });
 
-            expect(jobs).toHaveLength(1);
-        });
+  //! Remove
+  describe('remove()', () => {
+    it('should delete job', async () => {
+      const employer = await createEmployer(userModel);
+
+      const job = await createJob(jobModel, employer);
+
+      const result = await service.remove(job._id.toString(), employer);
+
+      expect(result.message).toBe('Job deleted successfully');
+    });
+  });
+
+  //! Toggle Close
+  describe('toggleClose()', () => {
+    it('should close job', async () => {
+      const employer = await createEmployer(userModel);
+
+      const job = await createJob(jobModel, employer);
+
+      await service.toggleClose(job._id.toString(), employer);
+
+      const updated = await jobModel.findById(job._id);
+
+      expect(updated.isClosed).toBe(true);
     });
 
-    //! Find Employer Jobs
-    describe('findEmployerJobs()', () => {
-        it('should return employer jobs', async () => {
-            const employer = await createEmployer(userModel);
+    it('should reopen job', async () => {
+      const employer = await createEmployer(userModel);
 
-            await createJob(jobModel, employer);
+      const job = await createJob(jobModel, employer, {
+        isClosed: true,
+      });
 
-            const jobs =
-                await service.findEmployerJobs(employer);
+      await service.toggleClose(job._id.toString(), employer);
 
-            expect(jobs).toHaveLength(1);
-        });
+      const updated = await jobModel.findById(job._id);
 
-        it('should throw for jobseeker', async () => {
-            const seeker = await createJobSeeker(userModel);
-
-            await expect(
-                service.findEmployerJobs(seeker),
-            ).rejects.toThrow(ForbiddenException);
-        });
+      expect(updated.isClosed).toBe(false);
     });
-
-    //! Find One
-    describe('findOne()', () => {
-        it('should return job', async () => {
-            const employer = await createEmployer(userModel);
-
-            const job = await createJob(jobModel, employer);
-
-            const result = await service.findOne(
-                job._id.toString(),
-            );
-
-            expect(result.title).toBe(job.title);
-        });
-
-        it('should throw if job not found', async () => {
-            await expect(
-                service.findOne(
-                    '685fc37ea26ebc75c37b9f31',
-                ),
-            ).rejects.toThrow(NotFoundException);
-        });
-    });
-
-    //! Update
-    describe('update()', () => {
-        it('should update job', async () => {
-            const employer = await createEmployer(userModel);
-
-            const job = await createJob(jobModel, employer);
-
-            const updated = await service.update(
-                job._id.toString(),
-                {
-                    title: 'Updated',
-                },
-                employer,
-            );
-
-            expect(updated.title).toBe('Updated');
-        });
-
-        it('should throw if another employer updates', async () => {
-            const employer1 = await createEmployer(userModel);
-
-            const employer2 = await createEmployer(userModel);
-
-            const job = await createJob(jobModel, employer1);
-
-            await expect(
-                service.update(
-                    job._id.toString(),
-                    {},
-                    employer2,
-                ),
-            ).rejects.toThrow(ForbiddenException);
-        });
-    });
-
-    //! Remove
-    describe('remove()', () => {
-        it('should delete job', async () => {
-            const employer = await createEmployer(userModel);
-
-            const job = await createJob(jobModel, employer);
-
-            const result = await service.remove(
-                job._id.toString(),
-                employer,
-            );
-
-            expect(result.message).toBe(
-                'Job deleted successfully',
-            );
-        });
-    });
-
-    //! Toggle Close
-    describe('toggleClose()', () => {
-        it('should close job', async () => {
-            const employer = await createEmployer(userModel);
-
-            const job = await createJob(jobModel, employer);
-
-            await service.toggleClose(
-                job._id.toString(),
-                employer,
-            );
-
-            const updated = await jobModel.findById(job._id);
-
-            expect(updated.isClosed).toBe(true);
-        });
-
-        it('should reopen job', async () => {
-            const employer = await createEmployer(userModel);
-
-            const job = await createJob(jobModel, employer, {
-                isClosed: true,
-            });
-
-            await service.toggleClose(
-                job._id.toString(),
-                employer,
-            );
-
-            const updated = await jobModel.findById(job._id);
-
-            expect(updated.isClosed).toBe(false);
-        });
-    });
-
-
-})
+  });
+});

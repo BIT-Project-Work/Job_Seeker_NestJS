@@ -13,14 +13,9 @@ import { AppException } from '../exceptions/app.exceptions';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-  constructor(
-    private readonly logger: LoggerService,
-  ) { }
-
+  constructor(private readonly logger: LoggerService) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
-
-
     const ctx = host.switchToHttp();
 
     const request = ctx.getRequest<Request>();
@@ -30,15 +25,12 @@ export class GlobalExceptionFilter implements ExceptionFilter {
       exception instanceof HttpException &&
       request.originalUrl === '/api/health'
     ) {
-      response.status(exception.getStatus()).json(
-        exception.getResponse(),
-      );
+      response.status(exception.getStatus()).json(exception.getResponse());
 
       return;
     }
 
-    const isDevelopment =
-      process.env.NODE_ENV !== 'production';
+    const isDevelopment = process.env.NODE_ENV !== 'production';
 
     let statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
     let message = 'Something went wrong on our side.';
@@ -56,9 +48,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         typeof exceptionResponse === 'object' &&
         exceptionResponse !== null
       ) {
-        message =
-          (exceptionResponse as any).message ??
-          exception.message;
+        message = (exceptionResponse as any).message ?? exception.message;
       } else {
         message = exception.message;
       }
@@ -82,11 +72,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     };
 
     if (statusCode >= 500) {
-      this.logger.error(
-        message,
-        exception,
-        logContext,
-      );
+      this.logger.error(message, exception, logContext);
     } else {
       this.logger.warn(message, logContext);
     }
@@ -96,10 +82,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         success: false,
         status,
         message,
-        stack:
-          exception instanceof Error
-            ? exception.stack
-            : undefined,
+        stack: exception instanceof Error ? exception.stack : undefined,
       });
 
       return;

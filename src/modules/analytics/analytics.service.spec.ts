@@ -5,7 +5,7 @@ import { Types } from 'mongoose';
 
 import { AnalyticsService } from './analytics.service';
 import { Job } from '../jobs/schemas/job.schema';
-import { Application } from '../applications/schemas/application.schema'
+import { Application } from '../applications/schemas/application.schema';
 
 describe('AnalyticsService', () => {
   let service: AnalyticsService;
@@ -48,14 +48,11 @@ describe('AnalyticsService', () => {
   //! Throw Forbidden if not EMPLOYER
   it('should throw ForbiddenException if role is not EMPLOYER', async () => {
     await expect(
-      service.getEmployerAnalytics(
-        new Types.ObjectId(),
-        'JOB_SEEKER',
-      ),
+      service.getEmployerAnalytics(new Types.ObjectId(), 'JOB_SEEKER'),
     ).rejects.toThrow(ForbiddenException);
   });
 
-  //! 
+  //!
 
   mockJobModel.find.mockReturnValue({
     select: jest.fn().mockReturnValue({
@@ -96,6 +93,4 @@ describe('AnalyticsService', () => {
     .mockResolvedValueOnce(1);
 
   // mockJobModel.findById.mockResolvedValue(job);
-
-
 });

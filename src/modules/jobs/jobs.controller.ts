@@ -45,7 +45,7 @@ import { JobQueryDto } from './dto/job-query.dto';
 })
 export class JobsController {
   //! DI
-  constructor(private readonly jobsService: JobsService) { }
+  constructor(private readonly jobsService: JobsService) {}
 
   /**
    * !Create a new job
@@ -149,15 +149,13 @@ export class JobsController {
   @ApiOperation({
     summary: 'Get recommended jobs',
   })
-  async getRecommendedJobs(
-    @GetUser() user: any,
-  ) {
+  async getRecommendedJobs(@GetUser() user: any) {
     return this.jobsService.getRecommendedJobs(user._id);
   }
 
   /**
- *! Toggle Close Job
- */
+   *! Toggle Close Job
+   */
   @Patch(':id/toggle-close')
   @ApiBearerAuth('JWT-auth')
   @UseGuards(JwtAuthGuard, RolesGuard)

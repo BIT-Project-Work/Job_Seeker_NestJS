@@ -19,7 +19,8 @@ export class LoginDto {
   password!: string;
 
   @ApiProperty({
-    description: 'How long shoudl a user be able to access without needing to login again and again',
+    description:
+      'How long shoudl a user be able to access without needing to login again and again',
     example: 'true for 7 days, false for 1 day',
   })
   @IsBoolean()

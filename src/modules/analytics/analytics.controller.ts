@@ -24,7 +24,7 @@ import { Role } from '../..//common/enums/role';
 })
 export class AnalyticsController {
   //! DI
-  constructor(private readonly analyticsService: AnalyticsService) { }
+  constructor(private readonly analyticsService: AnalyticsService) {}
 
   /**
    *! Get Employer Analytics

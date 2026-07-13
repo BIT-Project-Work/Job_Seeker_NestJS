@@ -19,7 +19,7 @@ import { PrometheusModule } from './common/prometheus/prometheus.module';
 import { TestModule } from './modules/test/test.module';
 import { ProductsModule } from './modules/products/products.module';
 import { RedisModule } from './modules/redis/redis.module';
-import { LoggerModule } from 'nestjs-pino'
+import { LoggerModule } from 'nestjs-pino';
 import { ClsModule, ClsServiceManager } from 'nestjs-cls';
 import { RequestContextMiddleware } from './common/middlewares/request-context.middleware';
 import { getTraceContext } from './common/telemetry/trace-context';
@@ -31,18 +31,16 @@ import { randomUUID } from 'crypto';
 import { context, trace } from '@opentelemetry/api';
 @Module({
   imports: [
-
     //! Config Module
     ConfigModule.forRoot({
       isGlobal: true,
 
-      envFilePath:
-        process.env.ENV_FILE ?? '.env.development.local',
+      envFilePath: process.env.ENV_FILE ?? '.env.development.local',
 
       validationSchema: envSchema,
       validationOptions: {
         abortEarly: true,
-      }
+      },
     }),
 
     //! DB Connection
@@ -57,17 +55,19 @@ import { context, trace } from '@opentelemetry/api';
             config.getOrThrow<string>('DATABASE_URL'),
 
           connectionFactory: (connection: Connection) => {
-            connection.on('connected', () => console.log('✅ MongoDB connected'));
+            connection.on('connected', () =>
+              console.log('✅ MongoDB connected'),
+            );
             connection.on('disconnected', () =>
               console.log('❌ MongoDB disconnected'),
             );
             return connection;
           },
-        }
+        };
       },
     }),
 
-    //! Rate Limiting 
+    //! Rate Limiting
     ThrottlerModule.forRoot([
       {
         ttl: 60_000, // 1 minute
@@ -122,16 +122,12 @@ import { context, trace } from '@opentelemetry/api';
     //! Pino Logging (Transport, Format, Req log, Redaction, Req ID generation etc)
     LoggerModule.forRoot({
       pinoHttp: {
-        level:
-          process.env.NODE_ENV === 'production'
-            ? 'info'
-            : 'debug',
+        level: process.env.NODE_ENV === 'production' ? 'info' : 'debug',
 
         autoLogging: true,
 
         genReqId(req) {
-          return req.headers['x-request-id']?.toString() ??
-            crypto.randomUUID();
+          return req.headers['x-request-id']?.toString() ?? crypto.randomUUID();
         },
 
         redact: [
@@ -163,33 +159,31 @@ import { context, trace } from '@opentelemetry/api';
           process.env.NODE_ENV === 'production'
             ? undefined
             : {
-              target: 'pino-pretty',
-              options: {
-                colorize: true,
-                translateTime: 'SYS:standard',
-                singleLine: true,
-                ignore: 'pid,hostname',
+                target: 'pino-pretty',
+                options: {
+                  colorize: true,
+                  translateTime: 'SYS:standard',
+                  singleLine: true,
+                  ignore: 'pid,hostname',
+                },
               },
-            },
       },
     }),
 
     //! Application Logging (Services, Controllers and Filters etc)
     AppLoggerModule,
   ],
-  controllers: [
-    AppController,
-  ],
+  controllers: [AppController],
   providers: [
     AppService,
     {
       provide: APP_GUARD,
-      useClass: CustomThrottlerGuard
+      useClass: CustomThrottlerGuard,
     },
     {
       provide: APP_FILTER,
-      useClass: GlobalExceptionFilter
-    }
+      useClass: GlobalExceptionFilter,
+    },
   ],
 })
 export class AppModule implements NestModule {

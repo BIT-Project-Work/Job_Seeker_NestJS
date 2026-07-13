@@ -59,11 +59,10 @@ describe('ProductsService', () => {
     expect(result?.name).toBe('Gaming Laptop');
   });
 
-  //! Delete 
+  //! Delete
   it('should remove product', () => {
     expect(service.remove(1)).toBe(true);
 
     expect(service.findAll()).toHaveLength(1);
   });
-
 });

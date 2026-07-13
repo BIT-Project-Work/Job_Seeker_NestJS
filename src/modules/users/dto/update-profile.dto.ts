@@ -75,7 +75,6 @@ export class UpdateProfileDto {
   @IsString()
   resume?: string;
 
-
   @ApiProperty({
     description: 'User Resume Public Wala',
     example: 'http://localhost:7000/uploads/lemonresume.png',

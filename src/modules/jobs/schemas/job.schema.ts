@@ -82,7 +82,7 @@ JobSchema.index({ salaryMin: 1, salaryMax: 1 });
 JobSchema.index({ isClosed: 1, createdAt: -1 });
 
 // keyword search
-JobSchema.index({ title: "text", description: "text" });
+JobSchema.index({ title: 'text', description: 'text' });
 
 // For Analytics
 

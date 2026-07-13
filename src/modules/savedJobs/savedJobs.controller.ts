@@ -34,7 +34,7 @@ import { SavedJobsService } from './savedJobs.service';
 // @Roles(Role.JOBSEEKER)
 export class SavedJobsController {
   //! DI
-  constructor(private readonly savedJobsService: SavedJobsService) { }
+  constructor(private readonly savedJobsService: SavedJobsService) {}
 
   /**
    *! Save a job for later

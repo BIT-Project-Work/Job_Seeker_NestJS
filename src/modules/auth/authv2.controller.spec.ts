@@ -69,7 +69,6 @@ describe('AuthV2Controller', () => {
     expect(controller).toBeDefined();
   });
 
-
   //! Register a user
   describe('register', () => {
     it('should register user', async () => {
@@ -113,7 +112,6 @@ describe('AuthV2Controller', () => {
       expect(result).toEqual(response);
     });
   });
-
 
   //! Login
   describe('login', () => {
@@ -179,14 +177,9 @@ describe('AuthV2Controller', () => {
 
       mockConfigService.get.mockReturnValue('development');
 
-      const result = await controller.refresh(
-        req as any,
-        res as any,
-      );
+      const result = await controller.refresh(req as any, res as any);
 
-      expect(service.refreshTokens).toHaveBeenCalledWith(
-        'refresh-token',
-      );
+      expect(service.refreshTokens).toHaveBeenCalledWith('refresh-token');
 
       expect(res.cookie).toHaveBeenCalled();
 
@@ -208,9 +201,9 @@ describe('AuthV2Controller', () => {
         cookie: jest.fn(),
       };
 
-      await expect(
-        controller.refresh(req as any, res as any),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(controller.refresh(req as any, res as any)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 
@@ -280,10 +273,7 @@ describe('AuthV2Controller', () => {
 
       const result = await controller.resendVerifyOtp(dto as any);
 
-      expect(service.resendOtp).toHaveBeenCalledWith(
-        dto.email,
-        'VERIFY_EMAIL',
-      );
+      expect(service.resendOtp).toHaveBeenCalledWith(dto.email, 'VERIFY_EMAIL');
 
       expect(result).toEqual(response);
     });
@@ -331,7 +321,10 @@ describe('AuthV2Controller', () => {
 
       const result = await controller.resetPassword(dto as any);
 
-      expect(service.resetPassword).toHaveBeenCalledWith(dto.email, dto.newPassword);
+      expect(service.resetPassword).toHaveBeenCalledWith(
+        dto.email,
+        dto.newPassword,
+      );
 
       expect(result).toEqual(response);
     });
@@ -340,7 +333,6 @@ describe('AuthV2Controller', () => {
   //! Logout
   describe('logout', () => {
     it('should logout user and clear refresh cookie', async () => {
-
       const response = {
         success: true,
         message: 'Logged out successfully',
@@ -355,7 +347,6 @@ describe('AuthV2Controller', () => {
       expect(result).toEqual({
         message: 'Successfully logged out',
       });
-
     });
   });
 
@@ -388,10 +379,7 @@ describe('AuthV2Controller', () => {
         get: jest.fn().mockReturnValue('localhost:7000'),
       };
 
-      const result = controller.uploadImage(
-        file as any,
-        req as any,
-      );
+      const result = controller.uploadImage(file as any, req as any);
 
       expect(req.get).toHaveBeenCalledWith('host');
 

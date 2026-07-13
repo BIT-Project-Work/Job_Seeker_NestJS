@@ -12,7 +12,7 @@ describe('UsersController', () => {
     updateProfie: jest.fn(),
     deleteResume: jest.fn(),
     getPublicProfile: jest.fn(),
-  }
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
@@ -83,10 +83,7 @@ describe('UsersController', () => {
 
     const result = await controller.updateProfile('1', dto as any);
 
-    expect(service.updateProfie).toHaveBeenCalledWith(
-      '1',
-      dto,
-    );
+    expect(service.updateProfie).toHaveBeenCalledWith('1', dto);
 
     expect(result).toEqual(updatedUser);
   });
@@ -103,15 +100,9 @@ describe('UsersController', () => {
 
     mockUsersService.deleteResume.mockResolvedValue(response);
 
-    const result = await controller.removeResume(
-      '1',
-      dto as any,
-    );
+    const result = await controller.removeResume('1', dto as any);
 
-    expect(service.deleteResume).toHaveBeenCalledWith(
-      '1',
-      dto,
-    );
+    expect(service.deleteResume).toHaveBeenCalledWith('1', dto);
 
     expect(result).toEqual(response);
   });
@@ -127,12 +118,8 @@ describe('UsersController', () => {
 
     const result = await controller.getPublicProfile('1');
 
-    expect(service.getPublicProfile).toHaveBeenCalledWith(
-      '1',
-    );
+    expect(service.getPublicProfile).toHaveBeenCalledWith('1');
 
     expect(result).toEqual(profile);
   });
-
-
 });

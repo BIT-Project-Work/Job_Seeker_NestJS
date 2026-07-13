@@ -40,7 +40,7 @@ import { Role } from '../../common/enums/role';
 })
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) { }
+  constructor(private readonly usersService: UsersService) {}
 
   // @Post()
   // create(@Body() createUserDto: CreateUserDto) {
@@ -51,7 +51,7 @@ export class UsersController {
    *! Get all users [ADMIN]
    */
   @Get()
-  @UseGuards(JwtAuthGuard,RolesGuard)
+  @UseGuards(JwtAuthGuard, RolesGuard)
   // @Roles(Role.ADMIN)
   @ApiOperation({
     summary: 'View all the users',
@@ -177,9 +177,7 @@ export class UsersController {
     status: 429,
     description: 'Too Many Requests',
   })
-  async removeResume(
-    @GetUser('_id') userId: string,
-  ) {
+  async removeResume(@GetUser('_id') userId: string) {
     return this.usersService.deleteResume(userId);
   }
 

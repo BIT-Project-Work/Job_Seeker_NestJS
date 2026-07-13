@@ -26,9 +26,9 @@ export class UsersService {
   constructor(
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
-    private readonly logger: LoggerService
+    private readonly logger: LoggerService,
   ) {
-    this.logger.setContext(UsersService.name)
+    this.logger.setContext(UsersService.name);
   }
 
   async create(createUserDto: Partial<User>) {
@@ -63,7 +63,6 @@ export class UsersService {
     userId: string,
     dto: UpdateProfileDto,
   ): Promise<ProfileResponseDto> {
-
     const user = await this.userModel.findById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -78,20 +77,17 @@ export class UsersService {
     /*
      * Avatar replacement
      */
-    if (dto.avatar === "" && dto.avatarPublicId === "") {
+    if (dto.avatar === '' && dto.avatarPublicId === '') {
       if (user.avatarPublicId) {
         await cloudinary.uploader.destroy(user.avatarPublicId);
       }
 
-      user.avatar = "";
-      user.avatarPublicId = "";
+      user.avatar = '';
+      user.avatarPublicId = '';
     }
 
     // Avatar replaced
-    else if (
-      dto.avatarPublicId &&
-      dto.avatarPublicId !== user.avatarPublicId
-    ) {
+    else if (dto.avatarPublicId && dto.avatarPublicId !== user.avatarPublicId) {
       if (user.avatarPublicId) {
         await cloudinary.uploader.destroy(user.avatarPublicId);
       }
@@ -133,20 +129,17 @@ export class UsersService {
     //   user.resumePublicId = dto.resumePublicId;
     // }
 
-    if (dto.resume === "" && dto.resumePublicId === "") {
+    if (dto.resume === '' && dto.resumePublicId === '') {
       if (user.resumePublicId) {
         await cloudinary.uploader.destroy(user.resumePublicId);
       }
 
-      user.resume = "";
-      user.resumePublicId = "";
+      user.resume = '';
+      user.resumePublicId = '';
     }
 
     // resume replaced
-    else if (
-      dto.resumePublicId &&
-      dto.resumePublicId !== user.resumePublicId
-    ) {
+    else if (dto.resumePublicId && dto.resumePublicId !== user.resumePublicId) {
       if (user.resumePublicId) {
         await cloudinary.uploader.destroy(user.resumePublicId);
       }
@@ -157,17 +150,18 @@ export class UsersService {
 
     if (user.role === 'EMPLOYER') {
       user.companyName = dto.companyName ?? user.companyName;
-      user.companyDescription = dto.companyDescription ?? user.companyDescription;
+      user.companyDescription =
+        dto.companyDescription ?? user.companyDescription;
       /*
-     * Company logo replacement
-     */
-      if (dto.companyLogo === "" && dto.companyLogoPublicId === "") {
+       * Company logo replacement
+       */
+      if (dto.companyLogo === '' && dto.companyLogoPublicId === '') {
         if (user.companyLogoPublicId) {
           await cloudinary.uploader.destroy(user.companyLogoPublicId);
         }
 
-        user.companyLogo = "";
-        user.companyLogoPublicId = "";
+        user.companyLogo = '';
+        user.companyLogoPublicId = '';
       }
 
       // companyLogo replaced
@@ -182,14 +176,13 @@ export class UsersService {
         user.companyLogo = dto.companyLogo;
         user.companyLogoPublicId = dto.companyLogoPublicId;
       }
-
     }
 
     await user.save();
     this.logger.info('User Profile Updated', {
       userId: user._id.toString(),
       email: user.email,
-    })
+    });
 
     return {
       _id: user._id.toString(),
@@ -211,7 +204,6 @@ export class UsersService {
    *!  Delete Resume
    */
   async deleteResume(userId: string) {
-
     const user = await this.userModel.findById(userId);
 
     if (!user) {
@@ -224,28 +216,19 @@ export class UsersService {
 
     if (user.resumePublicId) {
       try {
-        await cloudinary.uploader.destroy(
-          user.resumePublicId,
-          {
-            resource_type: 'raw',
-          },
-        );
+        await cloudinary.uploader.destroy(user.resumePublicId, {
+          resource_type: 'raw',
+        });
 
-        this.logger.info(
-          'Resume deleted from Cloudinary',
-          {
-            userId: user._id.toString(),
-            email: user.email,
-          },
-        );
+        this.logger.info('Resume deleted from Cloudinary', {
+          userId: user._id.toString(),
+          email: user.email,
+        });
       } catch (error) {
-        this.logger.warn(
-          'Failed to delete resume from Cloudinary',
-          {
-            userId,
-            publicId: user.resumePublicId,
-          },
-        );
+        this.logger.warn('Failed to delete resume from Cloudinary', {
+          userId,
+          publicId: user.resumePublicId,
+        });
       }
     }
 

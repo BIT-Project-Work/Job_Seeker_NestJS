@@ -1,18 +1,15 @@
-
 // src/common/cache/cache.keys.ts
 
 export const CacheKeys = {
-    jobs: () => 'jobs',
+  jobs: () => 'jobs',
 
-    job: (jobId: string) => `job:${jobId}`,
+  job: (jobId: string) => `job:${jobId}`,
 
-    employerJobs: (employerId: string) =>
-        `employer-jobs:${employerId}`,
+  employerJobs: (employerId: string) => `employer-jobs:${employerId}`,
 
-    recommendations: (userId: string) =>
-        `recommendations:${userId}`,
+  recommendations: (userId: string) => `recommendations:${userId}`,
 
-    categories: () => 'categories',
+  categories: () => 'categories',
 
-    skills: () => 'skills',
+  skills: () => 'skills',
 };

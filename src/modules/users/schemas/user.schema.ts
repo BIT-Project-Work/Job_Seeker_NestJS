@@ -20,7 +20,6 @@ export class User {
   @Prop({ type: String, required: true })
   name!: string;
 
-
   //! Recommendation Engine ko start
   @ApiProperty({
     example: '"React", "NestJS", "MongoDB","Docker"',
@@ -76,11 +75,11 @@ export class User {
   role!: Role;
 
   @ApiProperty({
-    description: "Refresh token",
-    required: false
+    description: 'Refresh token',
+    required: false,
   })
   @Prop()
-  refreshToken?: string
+  refreshToken?: string;
 
   @Prop()
   refreshTokenExpiresAt!: Date;

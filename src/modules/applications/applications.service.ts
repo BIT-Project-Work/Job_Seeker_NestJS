@@ -24,7 +24,7 @@ export class ApplicationsService {
     private applicationModel: Model<ApplicationDocument>,
     @InjectModel(Job.name) private jobModel: Model<JobDocument>,
     private readonly mailService: MailService,
-  ) { }
+  ) {}
 
   /**
    *! Apply to Job
@@ -90,10 +90,7 @@ export class ApplicationsService {
     const result = applications.map((application) => {
       const applicant = application.applicant as any;
 
-      const recommendationScore = calculateRecommendationScore(
-        applicant,
-        job,
-      );
+      const recommendationScore = calculateRecommendationScore(applicant, job);
 
       return {
         ...application.toObject(),
@@ -102,9 +99,7 @@ export class ApplicationsService {
       };
     });
 
-    result.sort(
-      (a, b) => b.recommendationScore - a.recommendationScore,
-    );
+    result.sort((a, b) => b.recommendationScore - a.recommendationScore);
 
     return result;
   }

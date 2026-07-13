@@ -5,18 +5,26 @@ import { getModelToken } from '@nestjs/mongoose';
 import { createTestingApp, closeTestingApp } from './setup/app.e2e';
 import { clearDatabase } from './setup/mongodb';
 
-import { createAuthenticatedEmployer, createAuthenticatedJobSeeker } from './helpers/auth.helper';
+import {
+  createAuthenticatedEmployer,
+  createAuthenticatedJobSeeker,
+} from './helpers/auth.helper';
 import { E2ETestContext } from './setup/e2e-context';
 import { createJob, createJobRequest } from './helpers/jobs.helper';
 import { createEmployerWithJob } from './helpers/employerWithJob.helper';
 
 import { jobFixture } from './fixtures/job.fixture';
-import { getJobRequest, updateJobRequest, deleteJobRequest, toggleCloseJobRequest, getJobsRequest, toggleCloseJob, getEmployerJobsRequest } from './helpers/jobs.helper';
-
 import {
-  Job,
-  JobDocument,
-} from '../../src/modules/jobs/schemas/job.schema';
+  getJobRequest,
+  updateJobRequest,
+  deleteJobRequest,
+  toggleCloseJobRequest,
+  getJobsRequest,
+  toggleCloseJob,
+  getEmployerJobsRequest,
+} from './helpers/jobs.helper';
+
+import { Job, JobDocument } from '../../src/modules/jobs/schemas/job.schema';
 
 describe('Jobs (e2e)', () => {
   let ctx: E2ETestContext;
@@ -27,9 +35,7 @@ describe('Jobs (e2e)', () => {
     ctx = await createTestingApp();
     app = ctx.app;
 
-    jobModel = app.get<Model<JobDocument>>(
-      getModelToken(Job.name),
-    );
+    jobModel = app.get<Model<JobDocument>>(getModelToken(Job.name));
   });
 
   beforeEach(async () => {
@@ -45,10 +51,7 @@ describe('Jobs (e2e)', () => {
     it('should allow employer to create a job', async () => {
       const employer = await createAuthenticatedEmployer(app);
 
-      const job = await createJob(
-        app,
-        employer.accessToken,
-      );
+      const job = await createJob(app, employer.accessToken);
 
       expect(job).toBeDefined();
       expect(job._id).toBeDefined();
@@ -58,9 +61,7 @@ describe('Jobs (e2e)', () => {
 
       expect(created).not.toBeNull();
       expect(created!.title).toBe(jobFixture.title);
-      expect(created!.company.toString()).toBe(
-        employer.user._id,
-      );
+      expect(created!.company.toString()).toBe(employer.user._id);
     });
 
     it('should return 401 if token is missing', async () => {
@@ -74,8 +75,7 @@ describe('Jobs (e2e)', () => {
     });
 
     it('should return 403 if job seeker tries to create a job', async () => {
-      const seeker =
-        await createAuthenticatedJobSeeker(app);
+      const seeker = await createAuthenticatedJobSeeker(app);
 
       await createJobRequest(app, {
         accessToken: seeker.accessToken,
@@ -83,8 +83,7 @@ describe('Jobs (e2e)', () => {
     });
 
     it('should return 400 if title is missing', async () => {
-      const employer =
-        await createAuthenticatedEmployer(app);
+      const employer = await createAuthenticatedEmployer(app);
 
       const payload = {
         ...jobFixture,
@@ -99,8 +98,7 @@ describe('Jobs (e2e)', () => {
     });
 
     it('should return 400 if title is empty', async () => {
-      const employer =
-        await createAuthenticatedEmployer(app);
+      const employer = await createAuthenticatedEmployer(app);
 
       await createJobRequest(app, {
         accessToken: employer.accessToken,
@@ -112,8 +110,7 @@ describe('Jobs (e2e)', () => {
     });
 
     it('should return 400 if salaryMax is less than salaryMin', async () => {
-      const employer =
-        await createAuthenticatedEmployer(app);
+      const employer = await createAuthenticatedEmployer(app);
 
       await createJobRequest(app, {
         accessToken: employer.accessToken,
@@ -213,7 +210,11 @@ describe('Jobs (e2e)', () => {
     it('should not return closed jobs', async () => {
       const employer = await createEmployerWithJob(app);
 
-      await toggleCloseJob(app, employer.employer.accessToken, employer.job._id);
+      await toggleCloseJob(
+        app,
+        employer.employer.accessToken,
+        employer.job._id,
+      );
 
       const response = await getJobsRequest(app).expect(200);
 
@@ -226,30 +227,19 @@ describe('Jobs (e2e)', () => {
     it('should return a single job', async () => {
       const employer = await createEmployerWithJob(app);
 
-      const response = await getJobRequest(
-        app,
-        employer.job._id,
-      ).expect(200);
+      const response = await getJobRequest(app, employer.job._id).expect(200);
 
-      expect(response.body._id).toBe(
-        employer.job._id,
-      );
+      expect(response.body._id).toBe(employer.job._id);
     });
 
     it('should return 404 if job does not exist', async () => {
-      await getJobRequest(
-        app,
-        '6842d4dfb97d79dfe6c12345',
-      ).expect(404);
+      await getJobRequest(app, '6842d4dfb97d79dfe6c12345').expect(404);
     });
 
     it('should include applicationStatus as null', async () => {
       const employer = await createEmployerWithJob(app);
 
-      const response = await getJobRequest(
-        app,
-        employer.job._id,
-      ).expect(200);
+      const response = await getJobRequest(app, employer.job._id).expect(200);
 
       expect(response.body.applicationStatus).toBeNull();
     });
@@ -268,13 +258,11 @@ describe('Jobs (e2e)', () => {
     });
 
     it('should return 401 without token', async () => {
-      await getEmployerJobsRequest(app)
-        .expect(401);
+      await getEmployerJobsRequest(app).expect(401);
     });
 
     it('should return 403 for job seeker', async () => {
-      const seeker =
-        await createAuthenticatedJobSeeker(app);
+      const seeker = await createAuthenticatedJobSeeker(app);
 
       await getEmployerJobsRequest(app, {
         accessToken: seeker.accessToken,
@@ -295,9 +283,7 @@ describe('Jobs (e2e)', () => {
         },
       }).expect(200);
 
-      expect(response.body.title).toBe(
-        'Updated Title',
-      );
+      expect(response.body.title).toBe('Updated Title');
     });
 
     it('should return 401 without token', async () => {
@@ -312,11 +298,9 @@ describe('Jobs (e2e)', () => {
     });
 
     it('should return 403 when another employer updates the job', async () => {
-      const employer1 =
-        await createEmployerWithJob(app);
+      const employer1 = await createEmployerWithJob(app);
 
-      const employer2 =
-        await createAuthenticatedEmployer(app);
+      const employer2 = await createAuthenticatedEmployer(app);
 
       await updateJobRequest(app, {
         accessToken: employer2.accessToken,
@@ -328,8 +312,7 @@ describe('Jobs (e2e)', () => {
     });
 
     it('should return 404 for invalid job id', async () => {
-      const employer =
-        await createAuthenticatedEmployer(app);
+      const employer = await createAuthenticatedEmployer(app);
 
       await updateJobRequest(app, {
         accessToken: employer.accessToken,
@@ -351,9 +334,7 @@ describe('Jobs (e2e)', () => {
         jobId: employer.job._id,
       }).expect(200);
 
-      const job = await jobModel.findById(
-        employer.job._id,
-      );
+      const job = await jobModel.findById(employer.job._id);
 
       expect(job?.isClosed).toBe(true);
     });
@@ -371,19 +352,15 @@ describe('Jobs (e2e)', () => {
         jobId: employer.job._id,
       });
 
-      const job = await jobModel.findById(
-        employer.job._id,
-      );
+      const job = await jobModel.findById(employer.job._id);
 
       expect(job?.isClosed).toBe(false);
     });
 
     it('should return 403 for another employer', async () => {
-      const employer1 =
-        await createEmployerWithJob(app);
+      const employer1 = await createEmployerWithJob(app);
 
-      const employer2 =
-        await createAuthenticatedEmployer(app);
+      const employer2 = await createAuthenticatedEmployer(app);
 
       await toggleCloseJobRequest(app, {
         accessToken: employer2.accessToken,
@@ -402,9 +379,7 @@ describe('Jobs (e2e)', () => {
         jobId: employer.job._id,
       }).expect(200);
 
-      const job = await jobModel.findById(
-        employer.job._id,
-      );
+      const job = await jobModel.findById(employer.job._id);
 
       expect(job).toBeNull();
     });
@@ -418,11 +393,9 @@ describe('Jobs (e2e)', () => {
     });
 
     it('should return 403 for another employer', async () => {
-      const employer1 =
-        await createEmployerWithJob(app);
+      const employer1 = await createEmployerWithJob(app);
 
-      const employer2 =
-        await createAuthenticatedEmployer(app);
+      const employer2 = await createAuthenticatedEmployer(app);
 
       await deleteJobRequest(app, {
         accessToken: employer2.accessToken,
@@ -431,8 +404,7 @@ describe('Jobs (e2e)', () => {
     });
 
     it('should return 404 if job does not exist', async () => {
-      const employer =
-        await createAuthenticatedEmployer(app);
+      const employer = await createAuthenticatedEmployer(app);
 
       await deleteJobRequest(app, {
         accessToken: employer.accessToken,
@@ -440,6 +412,4 @@ describe('Jobs (e2e)', () => {
       }).expect(404);
     });
   });
-
-
 });

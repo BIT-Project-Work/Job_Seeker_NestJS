@@ -6,33 +6,26 @@ import { RedisService } from './modules/redis/redis.service';
  */
 @Injectable()
 export class AppService {
+  constructor(private readonly redisService: RedisService) {}
 
-    constructor(
-        private readonly redisService: RedisService
-    ) { }
+  // async onModuleInit() {
+  //     console.log(await this.redisService.ping());
+  // }
 
-    // async onModuleInit() {
-    //     console.log(await this.redisService.ping());
-    // }
+  getHello(): string {
+    const environment =
+      process.env.NODE_ENV === 'production'
+        ? 'Production'
+        : process.env.NODE_ENV === 'development'
+          ? 'Development'
+          : (process.env.NODE_ENV ?? 'Unknown');
 
-    getHello(): string {
-        const environment =
-            process.env.NODE_ENV === 'production'
-                ? 'Production'
-                : process.env.NODE_ENV === 'development'
-                    ? 'Development'
-                    : process.env.NODE_ENV ?? 'Unknown';
+    const statusColor =
+      process.env.NODE_ENV === 'production' ? '#dcfce7' : '#fef3c7';
 
-        const statusColor =
-            process.env.NODE_ENV === 'production'
-                ? '#dcfce7'
-                : '#fef3c7';
-
-        const statusTextColor =
-            process.env.NODE_ENV === 'production'
-                ? '#166534'
-                : '#92400e';
-        return `
+    const statusTextColor =
+      process.env.NODE_ENV === 'production' ? '#166534' : '#92400e';
+    return `
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -162,5 +155,5 @@ Made with ❤️ using NestJS
 </body>
 </html>
 `;
-    }
+  }
 }

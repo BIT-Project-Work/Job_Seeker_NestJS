@@ -17,7 +17,7 @@ import { AppLoggerModule } from '../../common/logger/logger.module';
       { name: Job.name, schema: JobSchema },
       { name: Application.name, schema: ApplicationSchema },
     ]),
-    AppLoggerModule
+    AppLoggerModule,
   ],
   controllers: [AnalyticsController],
   providers: [AnalyticsService],

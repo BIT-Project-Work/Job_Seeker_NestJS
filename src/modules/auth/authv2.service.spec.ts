@@ -4,7 +4,7 @@ import {
   ForbiddenException,
   InternalServerErrorException,
   UnauthorizedException,
-  NotFoundException
+  NotFoundException,
 } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
@@ -115,16 +115,9 @@ describe('AuthV2Service', () => {
     it('should hash and save refresh token', async () => {
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashed-refresh');
 
-      await service.updateRefreshToken(
-        'userId',
-        'refresh-token',
-        new Date(),
-      );
+      await service.updateRefreshToken('userId', 'refresh-token', new Date());
 
-      expect(bcrypt.hash).toHaveBeenCalledWith(
-        'refresh-token',
-        10,
-      );
+      expect(bcrypt.hash).toHaveBeenCalledWith('refresh-token', 10);
 
       expect(userModel.updateOne).toHaveBeenCalled();
     });
@@ -140,9 +133,9 @@ describe('AuthV2Service', () => {
         select: jest.fn().mockResolvedValue(null),
       });
 
-      await expect(
-        service.refreshTokens('refresh-token'),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.refreshTokens('refresh-token')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('should throw if refresh token does not match', async () => {
@@ -158,9 +151,9 @@ describe('AuthV2Service', () => {
 
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-      await expect(
-        service.refreshTokens('refresh-token'),
-      ).rejects.toThrow(ForbiddenException);
+      await expect(service.refreshTokens('refresh-token')).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('should throw if refresh token expired', async () => {
@@ -181,9 +174,9 @@ describe('AuthV2Service', () => {
 
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      await expect(
-        service.refreshTokens('refresh-token'),
-      ).rejects.toThrow(UnauthorizedException);
+      await expect(service.refreshTokens('refresh-token')).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('should refresh tokens successfully', async () => {
@@ -208,20 +201,14 @@ describe('AuthV2Service', () => {
 
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      jest
-        .spyOn(service as any, 'generateTokens')
-        .mockResolvedValue({
-          accessToken: 'access',
-          refreshToken: 'refresh',
-        });
+      jest.spyOn(service as any, 'generateTokens').mockResolvedValue({
+        accessToken: 'access',
+        refreshToken: 'refresh',
+      });
 
-      jest
-        .spyOn(service, 'updateRefreshToken')
-        .mockResolvedValue();
+      jest.spyOn(service, 'updateRefreshToken').mockResolvedValue();
 
-      const result = await service.refreshTokens(
-        'refresh-token',
-      );
+      const result = await service.refreshTokens('refresh-token');
 
       expect(result.accessToken).toBe('access');
       expect(result.newRefreshToken).toBe('refresh');
@@ -284,9 +271,7 @@ describe('AuthV2Service', () => {
 
       (bcrypt.hash as jest.Mock).mockResolvedValue('hashed');
 
-      userModel.create.mockRejectedValue(
-        new Error('database error'),
-      );
+      userModel.create.mockRejectedValue(new Error('database error'));
 
       await expect(service.register(dto as any)).rejects.toThrow(
         InternalServerErrorException,
@@ -392,16 +377,12 @@ describe('AuthV2Service', () => {
 
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      jest
-        .spyOn(service as any, 'generateTokens')
-        .mockResolvedValue({
-          accessToken: 'access',
-          refreshToken: 'refresh',
-        });
+      jest.spyOn(service as any, 'generateTokens').mockResolvedValue({
+        accessToken: 'access',
+        refreshToken: 'refresh',
+      });
 
-      jest
-        .spyOn(service, 'updateRefreshToken')
-        .mockResolvedValue();
+      jest.spyOn(service, 'updateRefreshToken').mockResolvedValue();
 
       const result = await service.verifyEmail(dto);
 
@@ -427,9 +408,7 @@ describe('AuthV2Service', () => {
     it('should throw if user does not exist', async () => {
       usersService.findByEmail.mockResolvedValue(null);
 
-      await expect(service.login(dto)).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.login(dto)).rejects.toThrow(UnauthorizedException);
     });
 
     it('should throw if password is incorrect', async () => {
@@ -439,9 +418,7 @@ describe('AuthV2Service', () => {
 
       (bcrypt.compare as jest.Mock).mockResolvedValue(false);
 
-      await expect(service.login(dto)).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.login(dto)).rejects.toThrow(UnauthorizedException);
     });
 
     it('should throw if email is not verified', async () => {
@@ -452,9 +429,7 @@ describe('AuthV2Service', () => {
 
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      await expect(service.login(dto)).rejects.toThrow(
-        UnauthorizedException,
-      );
+      await expect(service.login(dto)).rejects.toThrow(UnauthorizedException);
     });
 
     it('should login successfully', async () => {
@@ -477,16 +452,12 @@ describe('AuthV2Service', () => {
 
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      jest
-        .spyOn(service as any, 'generateTokens')
-        .mockResolvedValue({
-          accessToken: 'access-token',
-          refreshToken: 'refresh-token',
-        });
+      jest.spyOn(service as any, 'generateTokens').mockResolvedValue({
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+      });
 
-      jest
-        .spyOn(service, 'updateRefreshToken')
-        .mockResolvedValue();
+      jest.spyOn(service, 'updateRefreshToken').mockResolvedValue();
 
       const result = await service.login(dto);
 
@@ -530,16 +501,12 @@ describe('AuthV2Service', () => {
 
       (bcrypt.compare as jest.Mock).mockResolvedValue(true);
 
-      jest
-        .spyOn(service as any, 'generateTokens')
-        .mockResolvedValue({
-          accessToken: 'access-token',
-          refreshToken: 'refresh-token',
-        });
+      jest.spyOn(service as any, 'generateTokens').mockResolvedValue({
+        accessToken: 'access-token',
+        refreshToken: 'refresh-token',
+      });
 
-      jest
-        .spyOn(service, 'updateRefreshToken')
-        .mockResolvedValue();
+      jest.spyOn(service, 'updateRefreshToken').mockResolvedValue();
 
       const result = await service.login({
         ...dto,
@@ -556,9 +523,9 @@ describe('AuthV2Service', () => {
     it('should throw if user not found', async () => {
       userModel.findOne.mockResolvedValue(null);
 
-      await expect(
-        service.forgotPassword('john@test.com'),
-      ).rejects.toThrow(NotFoundException);
+      await expect(service.forgotPassword('john@test.com')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should send forgot password otp', async () => {
@@ -669,11 +636,7 @@ describe('AuthV2Service', () => {
 
       otpModel.deleteOne.mockResolvedValue({});
 
-      const result = await service.verifyOtp(
-        email,
-        otp,
-        'VERIFY_EMAIL',
-      );
+      const result = await service.verifyOtp(email, otp, 'VERIFY_EMAIL');
 
       expect(result).toBe(true);
 
@@ -688,10 +651,7 @@ describe('AuthV2Service', () => {
       userModel.findOne.mockResolvedValue(null);
 
       await expect(
-        service.resendOtp(
-          'john@test.com',
-          'VERIFY_EMAIL',
-        ),
+        service.resendOtp('john@test.com', 'VERIFY_EMAIL'),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -701,10 +661,7 @@ describe('AuthV2Service', () => {
       });
 
       await expect(
-        service.resendOtp(
-          'john@test.com',
-          'VERIFY_EMAIL',
-        ),
+        service.resendOtp('john@test.com', 'VERIFY_EMAIL'),
       ).rejects.toThrow(BadRequestException);
     });
 
@@ -724,10 +681,7 @@ describe('AuthV2Service', () => {
       otpModel.create.mockResolvedValue({});
       mailService.sendMail.mockResolvedValue(undefined);
 
-      const result = await service.resendOtp(
-        user.email,
-        'VERIFY_EMAIL',
-      );
+      const result = await service.resendOtp(user.email, 'VERIFY_EMAIL');
 
       expect(otpModel.deleteMany).toHaveBeenCalledWith({
         userId: user._id,
@@ -759,10 +713,7 @@ describe('AuthV2Service', () => {
       otpModel.create.mockResolvedValue({});
       mailService.sendMail.mockResolvedValue(undefined);
 
-      const result = await service.resendOtp(
-        user.email,
-        'FORGOT_PASSWORD',
-      );
+      const result = await service.resendOtp(user.email, 'FORGOT_PASSWORD');
 
       expect(otpModel.deleteMany).toHaveBeenCalledWith({
         userId: user._id,
@@ -808,10 +759,7 @@ describe('AuthV2Service', () => {
         'newPassword123',
       );
 
-      expect(bcrypt.hash).toHaveBeenCalledWith(
-        'newPassword123',
-        10,
-      );
+      expect(bcrypt.hash).toHaveBeenCalledWith('newPassword123', 10);
 
       expect(user.password).toBe('hashed-password');
       expect(user.refreshToken).toBe('');

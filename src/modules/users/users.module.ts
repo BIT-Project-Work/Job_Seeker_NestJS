@@ -8,7 +8,7 @@ import { AppLoggerModule } from '../../common/logger/logger.module';
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    AppLoggerModule
+    AppLoggerModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

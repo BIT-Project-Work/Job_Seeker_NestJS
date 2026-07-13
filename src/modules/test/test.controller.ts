@@ -3,15 +3,15 @@ import { TestService } from './test.service';
 
 @Controller('test')
 export class TestController {
-  constructor(private readonly testService: TestService) { }
+  constructor(private readonly testService: TestService) {}
 
   @Get('slow')
-  async slow() {
+  slow() {
     return this.testService.slow();
   }
 
   @Get('fast')
-  async fast() {
+  fast() {
     return this.testService.fast();
   }
 }

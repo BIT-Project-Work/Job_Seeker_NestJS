@@ -41,7 +41,7 @@ import { ApiDeprecated } from '../../common/utils/apideprecated';
 @ApiTags('Auth v1')
 @Controller({
   path: 'auth',
-  version: '1'
+  version: '1',
 })
 export class AuthController {
   //! DI
@@ -49,7 +49,7 @@ export class AuthController {
     private readonly authService: AuthService,
     private usersService: UsersService,
     private jwtService: JwtService,
-  ) { }
+  ) {}
 
   /**
    *! Register/ SignUp User

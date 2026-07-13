@@ -31,7 +31,7 @@ describe('JobsController', () => {
     }).compile();
 
     controller = module.get<JobsController>(JobsController);
-    service = module.get<JobsService>(JobsService)
+    service = module.get<JobsService>(JobsService);
   });
 
   //! Should exist
@@ -65,7 +65,7 @@ describe('JobsController', () => {
     });
   });
 
-  //! Find all jobs 
+  //! Find all jobs
   describe('findAll', () => {
     it('should return all jobs', async () => {
       const query = {
@@ -73,10 +73,7 @@ describe('JobsController', () => {
         limit: 10,
       };
 
-      const jobs = [
-        { title: 'Frontend' },
-        { title: 'Backend' },
-      ];
+      const jobs = [{ title: 'Frontend' }, { title: 'Backend' }];
 
       mockJobsService.findAll.mockResolvedValue(jobs);
 
@@ -90,10 +87,7 @@ describe('JobsController', () => {
   //! Find jobs without filter
   describe('findJobsWithoutFilters', () => {
     it('should return all jobs without filters', async () => {
-      const jobs = [
-        { title: 'React' },
-        { title: 'NestJS' },
-      ];
+      const jobs = [{ title: 'React' }, { title: 'NestJS' }];
 
       mockJobsService.findJobsWithoutFilters.mockResolvedValue(jobs);
 
@@ -111,9 +105,7 @@ describe('JobsController', () => {
         _id: 'employer-id',
       };
 
-      const jobs = [
-        { title: 'Frontend' },
-      ];
+      const jobs = [{ title: 'Frontend' }];
 
       mockJobsService.findEmployerJobs.mockResolvedValue(jobs);
 
@@ -124,7 +116,7 @@ describe('JobsController', () => {
     });
   });
 
-  //! Employer closing a job 
+  //! Employer closing a job
   describe('toggleClose', () => {
     it('should toggle job status', async () => {
       const user = {
@@ -137,15 +129,9 @@ describe('JobsController', () => {
 
       mockJobsService.toggleClose.mockResolvedValue(response);
 
-      const result = await controller.toggleClose(
-        'job-id',
-        user,
-      );
+      const result = await controller.toggleClose('job-id', user);
 
-      expect(service.toggleClose).toHaveBeenCalledWith(
-        'job-id',
-        user,
-      );
+      expect(service.toggleClose).toHaveBeenCalledWith('job-id', user);
 
       expect(result).toEqual(response);
     });
@@ -161,21 +147,15 @@ describe('JobsController', () => {
 
       mockJobsService.findOne.mockResolvedValue(job);
 
-      const result = await controller.findOne(
-        'job-id',
-        'user-id',
-      );
+      const result = await controller.findOne('job-id', 'user-id');
 
-      expect(service.findOne).toHaveBeenCalledWith(
-        'job-id',
-        'user-id',
-      );
+      expect(service.findOne).toHaveBeenCalledWith('job-id', 'user-id');
 
       expect(result).toEqual(job);
     });
   });
 
-  //! Update a job 
+  //! Update a job
   describe('update', () => {
     it('should update a job', async () => {
       const dto = {
@@ -193,17 +173,9 @@ describe('JobsController', () => {
 
       mockJobsService.update.mockResolvedValue(response);
 
-      const result = await controller.update(
-        'job-id',
-        dto as any,
-        user,
-      );
+      const result = await controller.update('job-id', dto as any, user);
 
-      expect(service.update).toHaveBeenCalledWith(
-        'job-id',
-        dto,
-        user,
-      );
+      expect(service.update).toHaveBeenCalledWith('job-id', dto, user);
 
       expect(result).toEqual(response);
     });
@@ -222,18 +194,11 @@ describe('JobsController', () => {
 
       mockJobsService.remove.mockResolvedValue(response);
 
-      const result = await controller.remove(
-        'job-id',
-        user,
-      );
+      const result = await controller.remove('job-id', user);
 
-      expect(service.remove).toHaveBeenCalledWith(
-        'job-id',
-        user,
-      );
+      expect(service.remove).toHaveBeenCalledWith('job-id', user);
 
       expect(result).toEqual(response);
     });
   });
-  
 });
